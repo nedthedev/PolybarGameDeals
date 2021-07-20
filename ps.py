@@ -1,5 +1,9 @@
 #!/usr/bin/python3 
 
+'''
+  
+'''
+
 import requests
 import time
 from bs4 import BeautifulSoup
@@ -11,9 +15,9 @@ class PS:
   _TOP_DEALS_PAGES = 1
   _TOP_DEALS_URL = "https://psdeals.net/us-store/collection/top_rated_sale?platforms=ps4&page="
   _YOUR_DEALS_URL = "https://psdeals.net/us-store/game/"
-  _ROOT_PS_DEALS_URL = "https://psdeals.net"
+  _PS_DEALS_URL = "https://psdeals.net"
+  _PS_STORE_URL = "https://store.playstation.com/en-us/product/"
   _SLEEP_DURATION = 5
-  _DEAL_URL = "https://store.playstation.com/en-us/product/"
 
 
 
@@ -36,7 +40,6 @@ class PS:
     
       ''' Sleep unless we just fetched the last page '''
       if(not _page+1 == pages):
-        print("Sleeping...")
         time.sleep(cls._SLEEP_DURATION)
     
     ''' update the database '''
@@ -53,7 +56,7 @@ class PS:
     # Search for alt="Game cover"...
     # Search for class="old_price" to determine if on sale
     # Search for class="font-weight-bold h4 underline-span" for current price
-    print("Fetching your deals...")
+    return
 
   
 
@@ -77,13 +80,17 @@ class PS:
       if(title): title = title.text
 
       full_price = game.find("span", {"class": ["game-collection-item-regular-price"]})
-      if(full_price): full_price = full_price.text
+      if(full_price): full_price = float(full_price.text[1:])
 
       sale_price = game.find("span", {"class": ["game-collection-item-discount-price"]})
-      if(sale_price): sale_price = sale_price.text
+      if(sale_price): sale_price = float(sale_price.text[1:])
 
       days_remaining = game.find("p", {"class": ["game-collection-item-end-date"]})
-      if(days_remaining): days_remaining = int(''.join(filter(str.isdigit, days_remaining.text)))
+      if(days_remaining): 
+        try:
+          days_remaining = int(''.join(filter(str.isdigit, days_remaining.text))) # this error out when it says "Ends in a day"
+        except Exception:
+          days_remaining = 1
       else: days_remaining = -1
 
       ps_deals_url = game.find("span", {"itemprop": ["url"]})
@@ -97,13 +104,13 @@ class PS:
         cover_image = None
         gid = None
 
-      parsed_data.append({"title": title, "full_price": full_price, "sale_price": sale_price, "days_remaining": days_remaining, "cover_image": cover_image, "psdeals_url": f"{cls._ROOT_PS_DEALS_URL}{ps_deals_url}", "pss_url": f"{cls._DEAL_URL}{gid}"})
+      parsed_data.append({"title": title, "full_price": full_price, "sale_price": sale_price, "cover_image": cover_image, "url": f"{cls._PS_DEALS_URL}{ps_deals_url}", "pss_url": f"{cls._PS_STORE_URL}{gid}"})
     return parsed_data
 
   @staticmethod
   def _parse_your_deals(data):
-    print(data)
+    return
 
   @staticmethod
   def _update_db(data):
-    print("Updating db...")
+    return

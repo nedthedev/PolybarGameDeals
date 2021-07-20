@@ -1,5 +1,9 @@
 #!/usr/bin/python3 
 
+'''
+
+'''
+
 import requests
 
 class PC:
@@ -19,8 +23,7 @@ class PC:
   @classmethod
   def get_top_deals(cls, upper_price=None):
     if(upper_price == None): upper_price = cls._UPPER_PRICE
-    
-    ''' Fetch the deals '''
+
     data = cls.__make_request(f"{cls._TOP_DEALS_URL}{upper_price}")
     if(data):
       data = cls.__parse_data(data)
@@ -28,8 +31,12 @@ class PC:
     return None
 
   @classmethod
-  def get_your_deals(cls):
-    print("Fetching your deals...")
+  def get_your_deals(cls, ids):
+    data = cls.__make_request(f"{cls._YOUR_DEALS_URL}{ids}")
+    if(data):
+      data = cls.__parse_data(data)
+      return data
+    return None
 
 
 
@@ -47,6 +54,23 @@ class PC:
   @classmethod
   def __parse_data(cls, data):
     parsed_data = []
+    titles = []
     for game in data:
-      parsed_data.append({"title": game["title"], "full_price": game["normalPrice"], "sale_price": game["salePrice"], "cover_image": game["thumb"], "url": f"{cls._DEAL_URL}{game['dealID']}"})
+      title = game["title"]
+      full_price = float(game["normalPrice"])
+      sale_price = float(game["salePrice"])
+      cover_image = game["thumb"]
+      url = f"{cls._DEAL_URL}{game['dealID']}"
+
+      ''' 
+      Unfortunately, the api can have lots of duplicates, some with different prices,
+      so I must do some checking...
+      '''
+      if(not title in titles):  # If this title hasn't been added then add it
+        titles.append(title)
+        parsed_data.append({"title": title, "full_price": full_price, "sale_price": sale_price, "cover_image": cover_image, "url": url})
+      else:   # if this title has been added, check if this one is cheaper
+        for existing_game in parsed_data:
+          if((title == existing_game['title']) and (sale_price < existing_game['sale_price'])):
+            existing_game.update({"sale_price": sale_price, "url": url})
     return parsed_data
