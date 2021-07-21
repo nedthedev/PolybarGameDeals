@@ -12,7 +12,7 @@ class PS:
   #####################
   '''   VARIABLES   '''
   #####################
-  _TOP_DEALS_PAGES = 1
+  _TOP_DEALS_PAGES = 2
   _TOP_DEALS_URL = "https://psdeals.net/us-store/collection/top_rated_sale?platforms=ps4&page="
   _YOUR_DEALS_URL = "https://psdeals.net/us-store/game/"
   _PS_DEALS_URL = "https://psdeals.net"
@@ -104,7 +104,7 @@ class PS:
         cover_image = None
         gid = None
 
-      parsed_data.append({"title": title, "full_price": full_price, "sale_price": sale_price, "cover_image": cover_image, "url": f"{cls._PS_DEALS_URL}{ps_deals_url}", "pss_url": f"{cls._PS_STORE_URL}{gid}"})
+      parsed_data.append({"title": title, "full_price": full_price, "sale_price": sale_price, "cover_image": cover_image, "days_remaining": days_remaining, "url": f"{cls._PS_DEALS_URL}{ps_deals_url}", "pss_url": f"{cls._PS_STORE_URL}{gid}"})
     return parsed_data
 
   @staticmethod

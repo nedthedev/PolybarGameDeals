@@ -6,6 +6,7 @@
 
 import argparse
 import sqlite3
+from datetime import timedelta
 
 from pc import PC
 from ps import PS
@@ -19,6 +20,9 @@ def check_args():
   return parser.parse_args()
 
 if __name__ == "__main__":
+
+  CUSTOM_UPDATE_DELAY = timedelta(seconds=0, minutes=30, hours=0, days=0)
+
   ''' Create a cursor and connection for the database interactions '''
   con = sqlite3.connect('games.db')
   cur = con.cursor()
@@ -30,28 +34,19 @@ if __name__ == "__main__":
   # DB_Calls.update_pc_games(cur, args.pc)
   # DB_Calls.update_ps_games(cur, args.ps)
 
-  ''' Get current database data and check if it needs updating '''
-  top_pc = DB_Calls.get_data(cur, Tables.TOP_PC.value)
-  your_pc = DB_Calls.get_data(cur, Tables.YOUR_PC.value)
-  top_ps = DB_Calls.get_data(cur, Tables.TOP_PS.value)
-  your_ps = DB_Calls.get_data(cur, Tables.YOUR_PS.value)
+  ''' There are 4 steps to take for each "collection" of games '''
+  old_top_pc = DB_Calls.get_data(cur, Tables.TOP_PC.value) # Get current database data
+  new_top_pc = PC.get_top_deals() # Get the deals
+  DB_Calls.add_top_deals(cur, Tables.TOP_PC.value, old_top_pc, new_top_pc) # Update the database
+  top_pc_games = DB_Calls.get_data(cur, Tables.TOP_PC.value) # Gather the data from the database
 
-  ''' Get the deals '''
-  # pc_games = PC.get_top_deals()
-  ps_games = PS.get_top_deals()
-
-  ''' Update the database '''
-  # commit the freshly parsed data
-  # for game in pc_games:
-  #   DB_Calls.add_data(cur, Tables.TOP_PC.value, game)
-  for game in ps_games:
-    DB_Calls.add_data(cur, Tables.TOP_PS.value, game)
-
-  ''' Gather the data from the database '''
-  # fetch the relevant data for rendering
+  ''' Repeat the process for each "collection" of games '''
+  old_top_ps = DB_Calls.get_data(cur, Tables.TOP_PS.value)
+  new_top_ps = PS.get_top_deals()
+  DB_Calls.add_top_deals(cur, Tables.TOP_PS.value, old_top_ps, new_top_ps)
+  top_ps_games = DB_Calls.get_data(cur, Tables.TOP_PS.value)
 
   ''' Format the data to pretty printed for the rofi popup '''
-  # print out the data to the bash script
 
   con.commit()
   con.close()
