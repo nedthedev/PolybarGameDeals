@@ -32,4 +32,6 @@
 # The output of main.py is in the form of json, so you can use jq and do pretty
 # much anything you want to with it.
 
-exec ./main.py | rofi -dmenu -p "Search game" -lines 12 -columns 2
+# -width -length
+chosen_game=$(exec ./main.py | rofi -dmenu -p "Search game" -lines 12 -columns 2 | awk -F "$" '{print $1}' | awk '{$1=$1};1')
+echo "$chosen_game"

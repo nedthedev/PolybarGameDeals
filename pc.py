@@ -68,7 +68,7 @@ class PC:
       '''
       if(not title in titles):  # If this title hasn't been added then add it
         titles.append(title)
-        parsed_data.append({"title": title, "full_price": full_price, "sale_price": sale_price, "cover_image": cover_image, "url": url})
+        parsed_data.append({"title": title, "full_price": full_price, "sale_price": sale_price, "cover_image": cover_image, "url": url, "title_length": f"{len(title)}"})
       else:   # if this title has been added, check if this one is cheaper
         for existing_game in parsed_data:
           if((title == existing_game['title']) and (sale_price < existing_game['sale_price'])):

@@ -84,11 +84,13 @@ class PS:
 
       sale_price = game.find("span", {"class": ["game-collection-item-discount-price"]})
       if(sale_price): sale_price = float(sale_price.text[1:])
+      else: sale_price = "99.99"
 
       days_remaining = game.find("p", {"class": ["game-collection-item-end-date"]})
       if(days_remaining): 
         try:
-          days_remaining = int(''.join(filter(str.isdigit, days_remaining.text))) # this error out when it says "Ends in a day"
+          if("hours" in days_remaining.text): days_remaining = "< 1"
+          else: days_remaining = int(''.join(filter(str.isdigit, days_remaining.text)))
         except Exception:
           days_remaining = 1
       else: days_remaining = -1
@@ -104,7 +106,7 @@ class PS:
         cover_image = None
         gid = None
 
-      parsed_data.append({"title": title, "full_price": full_price, "sale_price": sale_price, "cover_image": cover_image, "days_remaining": days_remaining, "url": f"{cls._PS_DEALS_URL}{ps_deals_url}", "pss_url": f"{cls._PS_STORE_URL}{gid}"})
+      parsed_data.append({"title": title, "full_price": full_price, "sale_price": sale_price, "cover_image": cover_image, "days_remaining": days_remaining, "url": f"{cls._PS_DEALS_URL}{ps_deals_url}", "pss_url": f"{cls._PS_STORE_URL}{gid}", "title_length": f"{len(title)}"})
     return parsed_data
 
   @staticmethod
