@@ -10,7 +10,7 @@ class PC:
   #####################
   '''   VARIABLES   '''
   #####################
-  _UPPER_PRICE = 10
+  _UPPER_PRICE = 15
   _YOUR_DEALS_URL = "https://www.cheapshark.com/api/1.0/games?ids="
   _TOP_DEALS_URL = "https://www.cheapshark.com/api/1.0/deals?upperPrice="
   _DEAL_URL = "https://www.cheapshark.com/redirect?dealID="

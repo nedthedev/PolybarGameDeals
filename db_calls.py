@@ -63,6 +63,10 @@ class DB_Calls:
   def get_longest_title(cur, table):
     return cur.execute(f"""SELECT title_length FROM {table} ORDER BY title_length DESC""").fetchone()
 
+  @staticmethod
+  def get_game_url(cur, table, title):
+    return cur.execute(f"""SELECT url FROM {table} WHERE TITLE=?""", (title, )).fetchone()[0]
+
   @classmethod
   def needs_updating(cls, cur, table, update_delay=None):
     try:  # attempt to get the first game's update time

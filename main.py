@@ -5,12 +5,18 @@
 '''
 
 import argparse
+from enum import Enum
 import sqlite3
 from datetime import timedelta
+import subprocess
 
 from pc import PC
 from ps import PS
 from db_calls import DB_Calls, Tables, DB_Indices
+
+class Categories(Enum):
+  TOP_PS = "Top Playstation Deals\n"
+  TOP_PC = "Top PC Deals\n"
 
 ''' Scan for arguments to manage the "wishlist" games '''
 def check_args():
@@ -51,10 +57,32 @@ if __name__ == "__main__":
     DB_Calls.add_top_deals(cur, Tables.TOP_PS.value, old_top_ps, new_top_ps)
   top_ps_games = DB_Calls.get_data(cur, Tables.TOP_PS.value)
 
-  ''' Format the data to pretty printed for the rofi popup '''
-  for game in top_pc_games:
-    print(f"{game[DB_Indices.TITLE.value]:47s} ${game[DB_Indices.SALE_PRICE.value]:.2f}")
-
+  category = subprocess.run(["rofi", "-dmenu", "-p", "Choose category", "-lines", "2", "-columns", "1"], input=str.encode(f"{Categories.TOP_PC.value}{Categories.TOP_PS.value}", encoding="UTF-8"), stdout=subprocess.PIPE).stdout.decode("UTF-8")
+  rofi_string = ""
+  if(category == Categories.TOP_PC.value):
+    _table = Tables.TOP_PC.value
+    for game in top_pc_games:
+      if(game[DB_Indices.SALE_PRICE.value] == 99.99):
+        rofi_string+=(f"{game[DB_Indices.TITLE.value]:45s} PS+")
+      else:
+        rofi_string+=(f"{game[DB_Indices.TITLE.value]:45s} ${game[DB_Indices.SALE_PRICE.value]:.2f}")
+      rofi_string+="\n"
+  else:
+    _table = Tables.TOP_PS.value
+    for game in top_ps_games:
+      if(game[DB_Indices.SALE_PRICE.value] == 99.99):
+        rofi_string+=(f"{game[DB_Indices.TITLE.value]:45s} $PS+")
+      else:
+        rofi_string+=(f"{game[DB_Indices.TITLE.value]:45s} ${game[DB_Indices.SALE_PRICE.value]:.2f}")
+      rofi_string+="\n"
+  
+  chosen_game = subprocess.run(["rofi", "-dmenu", "-p", "Search game", "-lines", "12", "-columns", "2"], stdout=subprocess.PIPE, input=str.encode(rofi_string, encoding="UTF-8"))
+  
+  if(chosen_game.returncode == 0):
+    chosen_game = chosen_game.stdout.decode("UTF-8").split("$")[0].rstrip()
+    url = DB_Calls.get_game_url(cur, _table, chosen_game)
+    subprocess.run(["firefox", url])
+  
   con.commit()
   con.close()
 
