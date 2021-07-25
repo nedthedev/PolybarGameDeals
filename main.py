@@ -6,8 +6,10 @@
   are scraped from https://psdeals.net/ using Python.
 
   Data Sources:
-    All PC Deals are provided using the cheapshark API at https://apidocs.cheapshark.com/
-    All Playstation deals are scraped from https://psdeals.net/
+    All PC Deals are provided using the cheapshark API at https://apidocs.cheapshark.com/. When you select a PC game it will take you to a redirect link as per the
+    rules of the api.
+    All Playstation deals are scraped from https://psdeals.net/. When you select a 
+    Playstation game it will take you to the game's page on the psdeals.net website.
 '''
 
 import argparse
@@ -48,27 +50,27 @@ def choose_game(category):
   elif(category == Categories.TOP_PS.value):
     _table = Tables.TOP_PS.value
     for game in top_ps_games:
-      if(game[DB_Indices.SALE_PRICE.value] == PS.ps_plus_price()):
-        rofi_string+=(f"{game[DB_Indices.TITLE.value]:45s} $ PS+")
-      else:
-        rofi_string+=(f"{game[DB_Indices.TITLE.value]:45s} ${game[DB_Indices.SALE_PRICE.value]:.2f}")
+      if(game[DB_Indices.SALE_PRICE.value] == PS.ps_plus_price()): rofi_string+=(f"{game[DB_Indices.TITLE.value]:45s} $ PS+")
+      else: rofi_string+=(f"{game[DB_Indices.TITLE.value]:45s} ${game[DB_Indices.SALE_PRICE.value]:.2f}")
       rofi_string+="\n"
-  else:
-    return None, None
-  
+  else: return None, None
   chosen_game = subprocess.run(["rofi", "-dmenu", "-p", "Search game", "-lines", "12", "-columns", "2"], stdout=subprocess.PIPE, input=str.encode(rofi_string, encoding="UTF-8"))
+  if(chosen_game.returncode == 0): chosen_game = chosen_game.stdout.decode("UTF-8").split("$")[0].rstrip()
+  else: chosen_game = None
   return chosen_game, _table
 
+
+
+######################
+'''   MAIN BLOCK   '''
+######################
 if __name__ == "__main__":
 
-  ''' By default, deals only update if it's been an hour. You can edit that time
-      here. This is an example for setting update interval to 30 minutes:
-      CUSTOM_UPDATE_DELAY = timedelta(seconds=0, minutes=30, hours=0, days=0)
-  '''
-  _CUSTOM_UPDATE_DELAY = None
+  CUSTOM_UPDATE_DELAY = None # timedelta(seconds=0, minutes=30, hours=0, days=0)
+  PC_UPPER_PRICE = 10
 
   # this is an option for the user to go back up to select pc or playstation deals
-  _GO_UP = "..\n"
+  _GO_UP = "..Choose Category\n"
 
   ''' Create a cursor and connection for the database interactions '''
   con = sqlite3.connect('games.db')
@@ -81,27 +83,28 @@ if __name__ == "__main__":
   # DB_Calls.update_pc_games(cur, args.pc)
   # DB_Calls.update_ps_games(cur, args.ps)
 
-  ''' There are 4 steps to take for each "collection" of games '''
-  if(DB_Calls.needs_updating(cur, Tables.TOP_PC.value, _CUSTOM_UPDATE_DELAY)):
-    old_top_pc = DB_Calls.get_data(cur, Tables.TOP_PC.value) # Get current database data
-    new_top_pc = PC.get_top_deals() # Get the deals
-    DB_Calls.add_top_deals(cur, Tables.TOP_PC.value, old_top_pc, new_top_pc) # Update the database
-  top_pc_games = DB_Calls.get_data(cur, Tables.TOP_PC.value) # Gather the data from the database
+  ''' SOME NEARLY DUPLICATE CODE :nauseated_face: '''
+  ''' Update / gather the PC games '''
+  if(DB_Calls.needs_updating(cur, Tables.TOP_PC.value, CUSTOM_UPDATE_DELAY)):
+    old_top_pc = DB_Calls.get_data(cur, Tables.TOP_PC.value)
+    new_top_pc = PC.get_top_deals(PC_UPPER_PRICE)
+    DB_Calls.add_top_deals(cur, Tables.TOP_PC.value, old_top_pc, new_top_pc)
+  top_pc_games = DB_Calls.get_data(cur, Tables.TOP_PC.value)
 
-  ''' Repeat the process for each "collection" of games '''
-  if(DB_Calls.needs_updating(cur, Tables.TOP_PS.value, _CUSTOM_UPDATE_DELAY)):
+  ''' Update / gather the Playstation games '''
+  if(DB_Calls.needs_updating(cur, Tables.TOP_PS.value, CUSTOM_UPDATE_DELAY)):
     old_top_ps = DB_Calls.get_data(cur, Tables.TOP_PS.value)
     new_top_ps = PS.get_top_deals()
     DB_Calls.add_top_deals(cur, Tables.TOP_PS.value, old_top_ps, new_top_ps)
   top_ps_games = DB_Calls.get_data(cur, Tables.TOP_PS.value)
 
+  ''' Rofi window logic loop '''
   while(True):
     category = choose_category()
     if(category):
       while(True):
         chosen_game, _table = choose_game(category)
-        if(chosen_game and chosen_game.returncode == 0):
-          chosen_game = chosen_game.stdout.decode("UTF-8").split("$")[0].rstrip()
+        if(chosen_game):
           url = DB_Calls.get_game_url(cur, _table, chosen_game)
           if(url): subprocess.run(["firefox", url])
           else: break

@@ -1,7 +1,8 @@
 #!/usr/bin/python3 
 
 '''
-  
+  This script is for fetching and parsing the Playstation deals, courtesy of
+  psdeals.net
 '''
 
 import requests
@@ -18,15 +19,16 @@ class PS:
   _PS_DEALS_URL = "https://psdeals.net"
   _PS_STORE_URL = "https://store.playstation.com/en-us/product/"
   _SLEEP_DURATION = 5 # the number of seconds to sleep between page requests
-  PS_PLUS_PRICE = "99.99" # a default price for PS+ only deals
+  _PS_PLUS_PRICE = "99.99" # a default price for PS+ only deals (arbitrary)
 
 
 
   ############################
   '''   "PUBLIC" METHODS   '''
   ############################
+  ''' Fetches the top deals pages, scrapes them, and gathers the relevant data '''
   @classmethod
-  def get_top_deals(cls, pages=None):
+  def get_top_deals(cls, pages=None, upper_price=None):
     ''' set the number of pages to fetch '''
     if(pages == None): pages = cls._TOP_DEALS_PAGES
     
@@ -42,19 +44,17 @@ class PS:
       ''' Sleep unless we just fetched the last page '''
       if(not _page+1 == pages):
         time.sleep(cls._SLEEP_DURATION)
-    
-    ''' update the database '''
-    cls._update_db(parsed_data)
 
     ''' Join the pages of games into one list '''
     joined_list = []
     for list_ in parsed_data:
-      joined_list = joined_list + list_
+      joined_list += list_
     return joined_list
 
+  ''' A utility method to return the class variable _PS_PLUS_PRICE '''
   @classmethod
   def ps_plus_price(cls):
-    return float(cls.PS_PLUS_PRICE)
+    return float(cls._PS_PLUS_PRICE)
 
   @classmethod
   def get_your_deals(cls):
@@ -68,6 +68,7 @@ class PS:
   #############################
   '''   "PRIVATE" METHODS   '''
   #############################
+  ''' Makes a request for the provided url '''
   @staticmethod
   def __make_request(url):
     r = requests.get(url)
@@ -75,6 +76,7 @@ class PS:
       return r
     return None
 
+  ''' The deal page scraper and data parser '''
   @classmethod
   def __parse_top_deals(cls, data):
     html = BeautifulSoup(data, "html.parser")
@@ -89,8 +91,11 @@ class PS:
 
       sale_price = game.find("span", {"class": ["game-collection-item-discount-price"]})
       if(sale_price): sale_price = float(sale_price.text[1:])
-      else: sale_price = cls.PS_PLUS_PRICE
+      else: sale_price = cls._PS_PLUS_PRICE
 
+      ''' There are many different indicator of time left for the deal, so I
+          must handle whether or not it's days, hours, or doens't exist 
+      '''
       days_remaining = game.find("p", {"class": ["game-collection-item-end-date"]})
       if(days_remaining): 
         try:
@@ -116,8 +121,4 @@ class PS:
 
   @staticmethod
   def _parse_your_deals(data):
-    return
-
-  @staticmethod
-  def _update_db(data):
     return

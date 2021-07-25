@@ -1,5 +1,11 @@
 #!/usr/bin/python3
 
+'''
+  This script contains all the methods pertaining to database interactions.
+  ps.py and pc.py both fetch and return the data that this file processes and
+  adds to the database.
+'''
+
 from datetime import datetime, timedelta
 from enum import Enum
 
@@ -18,7 +24,10 @@ class DB_Indices(Enum):
   UPDATE_TIME = 5
 
 class DB_Calls:
-
+  #####################
+  '''   VARIABLES   '''
+  #####################
+  ''' The default delay before updating the top deals '''
   _UPDATE_DELAY = timedelta(seconds=0, minutes=0, hours=1, days=0)
 
 
@@ -26,6 +35,9 @@ class DB_Calls:
   ############################
   '''   "PUBLIC" METHODS   '''
   ############################
+  ''' A simple function to fetch all the data from the given table. If the table
+      doesn't exist then it will be created.
+  '''
   @staticmethod
   def get_data(cur, table):
     try:
@@ -34,6 +46,10 @@ class DB_Calls:
       cur.execute(f"""CREATE TABLE {table}(title TEXT NOT NULL UNIQUE, full_price REAL, sale_price REAL, cover_image TEXT, url TEXT NOT NULL UNIQUE, update_time TEXT, title_length INTEGER);""")
     return cur.execute(f"""SELECT * FROM {table} ORDER BY sale_price ASC""").fetchall()
 
+  ''' Add top deals to the database. Since top deals will time out and not exist
+      anymore, we need to check if games in the database need to updated or
+      removed.
+  '''
   @staticmethod
   def add_top_deals(cur, table, existing_games, new_games):
     ''' When adding top deals, we need to remove the games that are no longer a "top deal" '''
@@ -52,15 +68,16 @@ class DB_Calls:
     for title in unmatched_titles:
       cur.execute(f"""DELETE FROM {table} WHERE TITLE=?""", (title, ))
    
-    ''' Update the remainder of the games
-        side note: for some reason I couldn't put this cur.execute where I have matched=True??
-        It would only do one game... I don't know why... '''
+    ''' Update the remainder of the games that are already present, add the
+        games that are new entries to the database.
+    '''
     for game in new_games: 
       if(cur.execute(f"SELECT * FROM {table} WHERE TITLE=?", (game['title'], )).fetchone()):
         cur.execute(f"""UPDATE {table} SET sale_price=?, url=?, update_time=? WHERE TITLE=?""", (game['sale_price'], game['url'], datetime.now(), game['title']))
       else:
         cur.execute(f"""INSERT INTO {table} VALUES(?, ?, ?, ?, ?, ?, ?)""", (game['title'], game['full_price'], game['sale_price'], game['cover_image'], game['url'], datetime.now(), len(game['title'])))
 
+  ''' Fetch a game's url given the title and table of the game '''
   @staticmethod
   def get_game_url(cur, table, title):
     url = cur.execute(f"""SELECT url FROM {table} WHERE TITLE=?""", (title, )).fetchone()
@@ -69,12 +86,16 @@ class DB_Calls:
     else:
       return None
 
+  ''' Determine if the top deals need to be updated based on update_delay. The 
+      function first checks to see if an entry even exists, if one does then it
+      will check the elapsed time.
+  '''
   @classmethod
   def needs_updating(cls, cur, table, update_delay=None):
-    try:  # attempt to get the first game's update time
+    try:
       game = cur.execute(f"""SELECT * FROM {table};""").fetchone()
       past_time = cls.__str_to_dt(game[DB_Indices.UPDATE_TIME.value])
-    except: # the table must be empty
+    except:
       return True
     if(not update_delay):
       update_delay = cls._UPDATE_DELAY

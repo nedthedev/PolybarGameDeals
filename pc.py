@@ -1,7 +1,7 @@
 #!/usr/bin/python3 
 
 '''
-
+  This script is for fetching and parsing the PC deals, courtesy of cheapshark.com
 '''
 
 import requests
@@ -10,7 +10,7 @@ class PC:
   #####################
   '''   VARIABLES   '''
   #####################
-  _UPPER_PRICE = 15
+  _UPPER_PRICE = 10
   _YOUR_DEALS_URL = "https://www.cheapshark.com/api/1.0/games?ids="
   _TOP_DEALS_URL = "https://www.cheapshark.com/api/1.0/deals?upperPrice="
   _DEAL_URL = "https://www.cheapshark.com/redirect?dealID="
@@ -20,6 +20,10 @@ class PC:
   ############################
   '''   "PUBLIC" METHODS   '''
   ############################
+  ''' Makes a request to get the top deals, parses them, and returns that data. 
+      If an upper_price is provided no deals greater than that amount will be
+      discovered. 
+  '''
   @classmethod
   def get_top_deals(cls, upper_price=None):
     if(upper_price == None): upper_price = cls._UPPER_PRICE
@@ -43,6 +47,7 @@ class PC:
   #############################
   '''   "PRIVATE" METHODS   '''
   #############################
+  ''' Makes a request for the provided url (the api) ''' 
   @staticmethod
   def __make_request(url):
     r = requests.get(url)
@@ -63,8 +68,7 @@ class PC:
       url = f"{cls._DEAL_URL}{game['dealID']}"
 
       ''' 
-      Unfortunately, the api can have lots of duplicates, some with different prices,
-      so I must do some checking...
+      Unfortunately, or fortunately?, the api can have lots of duplicates, some with different prices, so I must do some checking to remove dupes.
       '''
       if(not title in titles):  # If this title hasn't been added then add it
         titles.append(title)
