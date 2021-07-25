@@ -5,9 +5,9 @@ from enum import Enum
 
 class Tables(Enum):
   TOP_PC = "TOP_PC"
-  YOUR_PC = "YOUR_PC"
+  # YOUR_PC = "YOUR_PC"
   TOP_PS = "TOP_PS"
-  YOUR_PS = "YOUR_PS"
+  # YOUR_PS = "YOUR_PS"
   
 class DB_Indices(Enum):
   TITLE = 0
@@ -20,6 +20,8 @@ class DB_Indices(Enum):
 class DB_Calls:
 
   _UPDATE_DELAY = timedelta(seconds=0, minutes=0, hours=1, days=0)
+
+
 
   ############################
   '''   "PUBLIC" METHODS   '''
@@ -60,12 +62,12 @@ class DB_Calls:
         cur.execute(f"""INSERT INTO {table} VALUES(?, ?, ?, ?, ?, ?, ?)""", (game['title'], game['full_price'], game['sale_price'], game['cover_image'], game['url'], datetime.now(), len(game['title'])))
 
   @staticmethod
-  def get_longest_title(cur, table):
-    return cur.execute(f"""SELECT title_length FROM {table} ORDER BY title_length DESC""").fetchone()
-
-  @staticmethod
   def get_game_url(cur, table, title):
-    return cur.execute(f"""SELECT url FROM {table} WHERE TITLE=?""", (title, )).fetchone()[0]
+    url = cur.execute(f"""SELECT url FROM {table} WHERE TITLE=?""", (title, )).fetchone()
+    if(url):
+      return url[0]
+    else:
+      return None
 
   @classmethod
   def needs_updating(cls, cur, table, update_delay=None):
@@ -77,6 +79,8 @@ class DB_Calls:
     if(not update_delay):
       update_delay = cls._UPDATE_DELAY
     return ((datetime.now() - past_time) > update_delay)
+
+
 
   #############################
   '''   "PRIVATE" METHODS   '''

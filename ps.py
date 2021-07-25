@@ -12,12 +12,13 @@ class PS:
   #####################
   '''   VARIABLES   '''
   #####################
-  _TOP_DEALS_PAGES = 2
+  _TOP_DEALS_PAGES = 2  # this is the number of pages that contain deals
   _TOP_DEALS_URL = "https://psdeals.net/us-store/collection/top_rated_sale?platforms=ps4&page="
   _YOUR_DEALS_URL = "https://psdeals.net/us-store/game/"
   _PS_DEALS_URL = "https://psdeals.net"
   _PS_STORE_URL = "https://store.playstation.com/en-us/product/"
-  _SLEEP_DURATION = 5
+  _SLEEP_DURATION = 5 # the number of seconds to sleep between page requests
+  PS_PLUS_PRICE = "99.99" # a default price for PS+ only deals
 
 
 
@@ -52,6 +53,10 @@ class PS:
     return joined_list
 
   @classmethod
+  def ps_plus_price(cls):
+    return float(cls.PS_PLUS_PRICE)
+
+  @classmethod
   def get_your_deals(cls):
     # Search for alt="Game cover"...
     # Search for class="old_price" to determine if on sale
@@ -84,7 +89,7 @@ class PS:
 
       sale_price = game.find("span", {"class": ["game-collection-item-discount-price"]})
       if(sale_price): sale_price = float(sale_price.text[1:])
-      else: sale_price = "99.99"
+      else: sale_price = cls.PS_PLUS_PRICE
 
       days_remaining = game.find("p", {"class": ["game-collection-item-end-date"]})
       if(days_remaining): 
