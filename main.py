@@ -22,6 +22,15 @@ from pc import PC
 from ps import PS
 from db_calls import DB_Calls, Tables, DB_Indices
 
+
+
+#####################
+'''   VARIABLES   '''
+#####################
+CUSTOM_UPDATE_DELAY = None # timedelta(seconds=0, minutes=30, hours=0, days=0)
+PC_UPPER_PRICE = 10
+ENTRY_LENGTH = 45
+
 class Categories(Enum):
   TOP_PS = "Top Playstation Deals\n"
   TOP_PC = "Top PC Deals\n"
@@ -46,12 +55,12 @@ def choose_game(category):
   if(category == Categories.TOP_PC.value):
     _table = Tables.TOP_PC.value
     for game in top_pc_games:
-      rofi_string+=(f"{game[DB_Indices.TITLE.value]:45s} ${game[DB_Indices.SALE_PRICE.value]:.2f}\n")
+      rofi_string+=(f"{stretch_string(game[DB_Indices.TITLE.value], ENTRY_LENGTH):45s} ${game[DB_Indices.SALE_PRICE.value]:.2f}\n")
   elif(category == Categories.TOP_PS.value):
     _table = Tables.TOP_PS.value
     for game in top_ps_games:
-      if(game[DB_Indices.SALE_PRICE.value] == PS.ps_plus_price()): rofi_string+=(f"{game[DB_Indices.TITLE.value]:45s} $ PS+")
-      else: rofi_string+=(f"{game[DB_Indices.TITLE.value]:45s} ${game[DB_Indices.SALE_PRICE.value]:.2f}")
+      if(game[DB_Indices.SALE_PRICE.value] == PS.ps_plus_price()): rofi_string+=(f"{stretch_string(game[DB_Indices.TITLE.value], ENTRY_LENGTH):45s} $PS+")
+      else: rofi_string+=(f"{stretch_string(game[DB_Indices.TITLE.value], ENTRY_LENGTH):45s} ${game[DB_Indices.SALE_PRICE.value]:.2f}")
       rofi_string+="\n"
   else: return None, None
   chosen_game = subprocess.run(["rofi", "-dmenu", "-p", "Search game", "-lines", "12", "-columns", "2"], stdout=subprocess.PIPE, input=str.encode(rofi_string, encoding="UTF-8"))
@@ -59,18 +68,30 @@ def choose_game(category):
   else: chosen_game = None
   return chosen_game, _table
 
+def open_url(url):
+  yes = "Yes\n"
+  no = "No\n"
+  choice = subprocess.run(["rofi", "-dmenu", "-p", f"Open: {url}", "-lines", "2", "-columns", "1"], input=str.encode(f"{yes}{no}", encoding="UTF-8"), stdout=subprocess.PIPE).stdout.decode("UTF-8")
+  if(choice == yes): subprocess.run(["firefox", url])
+
+def stretch_string(string, length):
+  return string
+  if(len(string) >= length):
+    difference = len(string) - length
+    string = string[:-difference-3] + "..."
+  else:
+    for _ in range(length-len(string)):
+      string += " "
+  return string
+
 
 
 ######################
 '''   MAIN BLOCK   '''
 ######################
 if __name__ == "__main__":
-
-  CUSTOM_UPDATE_DELAY = None # timedelta(seconds=0, minutes=30, hours=0, days=0)
-  PC_UPPER_PRICE = 10
-
   # this is an option for the user to go back up to select pc or playstation deals
-  _GO_UP = "..Choose Category\n"
+  _GO_UP = "...Choose Category\n"
 
   ''' Create a cursor and connection for the database interactions '''
   con = sqlite3.connect('games.db')
@@ -106,7 +127,7 @@ if __name__ == "__main__":
         chosen_game, _table = choose_game(category)
         if(chosen_game):
           url = DB_Calls.get_game_url(cur, _table, chosen_game)
-          if(url): subprocess.run(["firefox", url])
+          if(url): open_url(url)
           else: break
         else: break
     else: break
