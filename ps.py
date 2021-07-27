@@ -84,7 +84,7 @@ class PS:
     parsed_data = []
     for game in games:
       title = game.find("p", "game-collection-item-details-title")
-      if(title): title = title.text
+      if(title): title = title.text.rstrip() # some titles have trailing space
 
       full_price = game.find("span", {"class": ["game-collection-item-regular-price"]})
       if(full_price): full_price = float(full_price.text[1:])
