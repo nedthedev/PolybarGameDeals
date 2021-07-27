@@ -1,7 +1,7 @@
 #!/usr/bin/python3 
 
 '''
-  This script is for fetching and parsing the PC deals, courtesy of cheapshark.com
+  This script is for fetching and parsing the PC deals, deals from cheapshark.com
 '''
 
 import requests

@@ -1,8 +1,7 @@
 #!/usr/bin/python3 
 
 '''
-  This script is for fetching and parsing the Playstation deals, courtesy of
-  psdeals.net
+  This script is for fetching and parsing the Playstation deals, deals from psdeals.net
 '''
 
 import requests
