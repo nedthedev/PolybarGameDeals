@@ -13,6 +13,7 @@ from ..platforms.ps import PS
 
 
 
+''' Selection enum for picking what platform of games to browse '''
 class Categories(Enum):
   TOP_PS = "Top Playstation Deals\n"
   TOP_PC = "Top PC Deals\n"
@@ -27,6 +28,7 @@ def check_args():
   ''''''
   return parser.parse_args()
 
+''' Returns all the games in the database from the given table and calls methods from cls '''
 def get_top_games(cur, table, cls, update_delay=None, upper_price=None):
   if(DB_Calls.needs_updating(cur, table, update_delay)):
     old_top = DB_Calls.get_data(cur, table)
@@ -35,6 +37,7 @@ def get_top_games(cur, table, cls, update_delay=None, upper_price=None):
     DB_Calls.add_top_deals(cur, table, old_top, new_top)
   return DB_Calls.get_data(cur, table)
 
+''' The main rofi logic loop wrapped in a function '''
 def launch_rofi(cur, games):
   while(True):
     category = choose_category()
@@ -48,11 +51,13 @@ def launch_rofi(cur, games):
         else: break
     else: break
 
+''' Rofi window to select what platform of games to browse '''
 def choose_category():
   category = subprocess.run(["rofi", "-dmenu", "-p", "Choose category", "-lines", "2", "-columns", "1"], input=str.encode(f"{Categories.TOP_PC.value}{Categories.TOP_PS.value}", encoding="UTF-8"), stdout=subprocess.PIPE)
   if(category.returncode > 0): return None
   else: return category.stdout.decode("UTF-8")
 
+''' Rofi window to select the game you want to see more about '''
 def choose_game(category, games):
   _GO_UP = "...Choose Category\n"
   rofi_string = _GO_UP
@@ -72,6 +77,7 @@ def choose_game(category, games):
   else: chosen_game = None
   return chosen_game, _table
 
+''' Rofi window confirming whether or not you want to open the link '''
 def open_url(url):
   yes = "Yes\n"
   no = "No\n"

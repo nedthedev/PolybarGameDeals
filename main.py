@@ -3,7 +3,7 @@
 '''
   This script finds and shows you some of the current best PC and Playstation
   deals. PC deals are found using a public REST API, while all playstation deals
-  are scraped from https://psdeals.net/ using Python.
+  are scraped from https://psdeals.net/.
 
   Data Sources:
     All PC Deals are provided using the cheapshark API at https://apidocs.cheapshark.com/. When you select a PC game it will take you to a redirect link as per the
