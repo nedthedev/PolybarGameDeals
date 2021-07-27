@@ -16,6 +16,16 @@ This script provides an all-in-one place for PC and Playstation deals. I built t
 ## How it works
 All deals are stored in a SQLite database. Data requests are only made if a certain amount of time has passed since the last request. This delay makes the program run faster and is also important because PSDeals doesn't offer an API, so excessive requests to their servers should be avoided.
 
+To run it, just make sure main.[]()py is executable and run it with:
+```bash
+./main.py
+```
+or
+```bash
+python3 main.py
+```
+The database will be automatically created and populated, just give it some time to fetch the data.
+
 ## Modification
 Feel free to tweak this however you want. For instance, if you don't want to use Rofi then you need only replace the following line in main.[]()py:
 ```python
