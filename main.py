@@ -12,6 +12,7 @@
 '''
 
 import sqlite3
+import os
 from datetime import timedelta
 
 from src.platforms.pc import PC
@@ -31,8 +32,11 @@ PC_UPPER_PRICE = 10
 '''   MAIN BLOCK   '''
 ######################
 if __name__ == "__main__":
+  ''' Move to the current directory '''
+  os.chdir(os.path.dirname(__file__))
+
   ''' Create a cursor and connection for the database interactions '''
-  con = sqlite3.connect('games.db')
+  con = sqlite3.connect(f'{os.getcwd()}/games.db')
   cur = con.cursor()
 
   ''' Check for any arguments '''
