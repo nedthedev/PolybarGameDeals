@@ -1,4 +1,4 @@
-# GameDeals
+# PolybarGameDeals
 This script provides an all-in-one place for PC and Playstation deals. I built this to use for a [Polybar](https://github.com/polybar/polybar) module, and [Rofi](https://github.com/davatorium/rofi) seemed like a good way to render and interact with the data, but feel free to do whatever you want with it.
 
 ## Dependencies
