@@ -57,9 +57,6 @@ class PS:
 
   @classmethod
   def get_your_deals(cls):
-    # Search for alt="Game cover"...
-    # Search for class="old_price" to determine if on sale
-    # Search for class="font-weight-bold h4 underline-span" for current price
     return
 
   
@@ -92,8 +89,8 @@ class PS:
       if(sale_price): sale_price = float(sale_price.text[1:])
       else: sale_price = cls._PS_PLUS_PRICE
 
-      ''' There are many different indicator of time left for the deal, so I
-          must handle whether or not it's days, hours, or doens't exist 
+      ''' There are many different indicators of time left for the deal, so I
+          must handle whether or not it's days, hours, or doesn't exist 
       '''
       days_remaining = game.find("p", {"class": ["game-collection-item-end-date"]})
       if(days_remaining): 

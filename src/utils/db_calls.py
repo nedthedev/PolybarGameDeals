@@ -61,7 +61,7 @@ class DB_Calls:
           matched = True
           break
       if(not matched):
-        # append it to the list of titles that we will delete
+        ''' append it to the list of titles that we will delete '''
         unmatched_titles.append(existing_game[DB_Indices.TITLE.value])
     
     ''' Delete the games that aren't found in the api response anymore '''
