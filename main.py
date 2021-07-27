@@ -8,8 +8,7 @@
   Data Sources:
     All PC Deals are provided using the cheapshark API at https://apidocs.cheapshark.com/. When you select a PC game it will take you to a redirect link as per the
     rules of the api.
-    All Playstation deals are scraped from https://psdeals.net/. When you select a 
-    Playstation game it will take you to the game's page on the psdeals.net website.
+    All Playstation deals are scraped from https://psdeals.net/. When you select a Playstation game it will take you to the game's page on the psdeals.net website.
 '''
 
 import sqlite3
