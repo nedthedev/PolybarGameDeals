@@ -14,10 +14,10 @@
 import sqlite3
 from datetime import timedelta
 
-from pc import PC
-from ps import PS
-from db_calls import  Tables
-from utils import get_top_games, launch_rofi, check_args
+from src.platforms.pc import PC
+from src.platforms.ps import PS
+from src.utils.db_calls import  Tables
+from src.utils.utils import get_top_games, launch_rofi, check_args
 
 
 

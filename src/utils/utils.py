@@ -8,8 +8,8 @@ import argparse
 from enum import Enum
 import subprocess
 
-from db_calls import DB_Calls, Tables, DB_Indices
-from ps import PS
+from .db_calls import DB_Calls, Tables, DB_Indices
+from ..platforms.ps import PS
 
 
 

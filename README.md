@@ -17,7 +17,7 @@ This script provides an all-in-one place for PC and Playstation deals. I built t
 All deals are stored in a SQLite database. Data requests are only made if a certain amount of time has passed since the last request. This delay makes the program run faster and is also important because PSDeals doesn't offer an API, so excessive requests to their servers should be avoided.
 
 ## Modification
-Feel free to tweak this however you want. For instance, if you don't want to use Rofi, then you need only replace the following line:
+Feel free to tweak this however you want. For instance, if you don't want to use Rofi then you need only replace the following line in main.[]()py:
 ```python
 launch_rofi(cur, games)
 ```
