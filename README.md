@@ -4,10 +4,10 @@ This script provides an all-in-one place for PC and Playstation deals. I built t
 ## Dependencies
   - Programs
     - Python 3
-    - rofi
+    - Rofi
     - A browser (default Firefox)
   - Python
-    - beautifulsoup4
+    - Beautifulsoup4
 
 ## Data Sources
   - PC Deals: [cheapshark.com](https://www.cheapshark.com/) (API)
@@ -16,7 +16,7 @@ This script provides an all-in-one place for PC and Playstation deals. I built t
 ## How it works
 All deals are stored in a SQLite database. Data requests are only made if a certain amount of time has passed since the last request. This delay makes the program run faster and is also important because PSDeals doesn't offer an API, so excessive requests to their servers should be avoided.
 
-To run it, just make sure main.[]()py is executable and run it with:
+To run it, just download or clone this repository, go to the project's location in a terminal, make sure main.[]()py is executable and run it with:
 ```bash
 ./main.py
 ```
