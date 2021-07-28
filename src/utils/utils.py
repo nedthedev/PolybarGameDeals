@@ -22,9 +22,13 @@ class Categories(Enum):
 def check_args():
   parser = argparse.ArgumentParser()
   ''''''
-  parser.add_argument("-ps", help="id of game from https://psdeals.net/. To find the id of your game, search for it and take the id from the url which looks like this: https://psdeals.net/.../game/{ID}/game-name. For instance, the url for Dishonored 2 is https://psdeals.net/us-store/game/884376/dishonored-2 and the id is 884376.", action="extend", nargs="+")
+  parser.add_argument("-s", "--silent", help="pass this argument if you want it to run in the background, no rofi window will open", action="store_true")
   ''''''
-  parser.add_argument("-pc", help="id of pc game from https://www.cheapshark.com. To find the id of your game, search for it at https://www.cheapshark.com/api/1.0/games?title=game-name, replacing game-name with your game name, like \"Dishonored 2\". So, then you'd have https://www.cheapshark.com/api/1.0/games?title=Dishonored-2", action="extend", nargs="+")
+  parser.add_argument("-b", "--browser", help="specify the path of the browser you want to open links with", default="/usr/bin/firefox")
+  ''''''
+  # parser.add_argument("-ps", help="id of game from https://psdeals.net/. To find the id of your game, search for it and take the id from the url which looks like this: https://psdeals.net/.../game/{ID}/game-name. For instance, the url for Dishonored 2 is https://psdeals.net/us-store/game/884376/dishonored-2 and the id is 884376.", action="extend", nargs="+")
+  ''''''
+  # parser.add_argument("-pc", help="id of pc game from https://www.cheapshark.com. To find the id of your game, search for it at https://www.cheapshark.com/api/1.0/games?title=game-name, replacing game-name with your game name, like \"Dishonored 2\". So, then you'd have https://www.cheapshark.com/api/1.0/games?title=Dishonored-2", action="extend", nargs="+")
   ''''''
   return parser.parse_args()
 
@@ -38,7 +42,7 @@ def get_top_games(cur, table, cls, update_delay=None, upper_price=None):
   return DB_Calls.get_data(cur, table)
 
 ''' The main rofi logic loop wrapped in a function '''
-def launch_rofi(cur, games, title_lengths):
+def launch_rofi(cur, games, title_lengths, browser):
   while(True):
     category = choose_category()
     if(category):
@@ -46,7 +50,7 @@ def launch_rofi(cur, games, title_lengths):
         chosen_game, _table = choose_game(category, games, title_lengths)
         if(chosen_game):
           url = DB_Calls.get_game_url(cur, _table, chosen_game)
-          if(url): open_url(url)
+          if(url): open_url(url, browser)
           else: break
         else: break
     else: break
@@ -82,11 +86,11 @@ def choose_game(category, games, title_lengths):
   return chosen_game, _table
 
 ''' Rofi window confirming whether or not you want to open the link '''
-def open_url(url):
+def open_url(url, browser):
   yes = "Yes\n"
   no = "No\n"
   choice = subprocess.run(["rofi", "-dmenu", "-p", f"Open: {url}", "-lines", "2", "-columns", "1"], input=str.encode(f"{yes}{no}", encoding="UTF-8"), stdout=subprocess.PIPE).stdout.decode("UTF-8")
-  if(choice == yes): subprocess.run(["firefox", url])
+  if(choice == yes): subprocess.run([browser, url])
 
 def stretch_string(string, length=None):
   if(len(string) >= length):

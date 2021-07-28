@@ -40,7 +40,7 @@ if __name__ == "__main__":
   cur = con.cursor()
 
   ''' Check for any arguments '''
-  # args = check_args()
+  args = check_args()
 
   ''' Add any new games '''
   # DB_Calls.update_pc_games(cur, args.pc)
@@ -59,7 +59,9 @@ if __name__ == "__main__":
   title_lengths = {'longest_pc_title': longest_pc_title, 'longest_ps_title': longest_ps_title} 
 
   ''' Rofi window logic loop '''
-  launch_rofi(cur, games, title_lengths)
+  if(not args.silent):
+    if(os.path.exists(args.browser)): launch_rofi(cur, games, title_lengths, args.browser)
+    else: print(f"No file at {args.browser}...")
 
   con.commit()
   con.close()

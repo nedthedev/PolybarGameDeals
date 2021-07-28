@@ -24,13 +24,24 @@ or
 python3 main.py
 ```
 The database will be automatically created and populated, just give it some time to fetch the data.
-## Modification
-### Don't want rofi?
-Feel free to tweak this however you want. For instance, if you don't want to use Rofi then you need only replace the following line in main.[]()py:
-```python
-launch_rofi(cur, games)
+## Arguments
+```bash
+-s, --silent # run the script in the background, no rofi window will open
 ```
-with whatever you want to do with the data. 
+```bash
+-b, --browser BROWSER # specify the path of the browser you wish to open links with
+```
+
+## Modification
+### Want to do something else with the data?
+Feel free to tweak this however you want. For instance, if you don't want to use Rofi then you need only replace the following lines in main.[]()py with whatever you want to do with the data:
+```python
+if(not args.silent):
+  if(os.path.exists(args.browser)):
+    launch_rofi(cur, games, title_lengths, args.browser)
+  else: 
+    print(f"No file at {args.browser}...")
+```
 
 ## Notes
   - All PC links go to [cheapshark.com](https://www.cheapshark.com/) and will be redirected to the store with the best deal.
