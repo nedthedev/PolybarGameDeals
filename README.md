@@ -3,11 +3,10 @@ This script provides an all-in-one place for PC and Playstation deals. I built t
 
 ## Dependencies
   - Programs
-    - Python 3
     - Rofi
     - A browser (default Firefox)
-  - Python
-    - Beautifulsoup4
+    - Python 3
+      - beautifulsoup4
 
 ## Data Sources
   - PC Deals: [cheapshark.com](https://www.cheapshark.com/) (API)
