@@ -2,11 +2,10 @@
 This script provides an all-in-one place for PC and Playstation deals. I built this to use for a [Polybar](https://github.com/polybar/polybar) module, and [Rofi](https://github.com/davatorium/rofi) seemed like a good way to render and interact with the data, but feel free to do whatever you want with it.
 
 ## Dependencies
-  - Programs
-    - Rofi
-    - A browser (default Firefox)
-    - Python 3
-      - beautifulsoup4
+  - Rofi
+  - A browser (default Firefox)
+  - Python 3
+    - beautifulsoup4
 
 ## Data Sources
   - PC Deals: [cheapshark.com](https://www.cheapshark.com/) (API)
