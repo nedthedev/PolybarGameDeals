@@ -38,12 +38,12 @@ def get_top_games(cur, table, cls, update_delay=None, upper_price=None):
   return DB_Calls.get_data(cur, table)
 
 ''' The main rofi logic loop wrapped in a function '''
-def launch_rofi(cur, games):
+def launch_rofi(cur, games, title_lengths):
   while(True):
     category = choose_category()
     if(category):
       while(True):
-        chosen_game, _table = choose_game(category, games)
+        chosen_game, _table = choose_game(category, games, title_lengths)
         if(chosen_game):
           url = DB_Calls.get_game_url(cur, _table, chosen_game)
           if(url): open_url(url)
@@ -58,21 +58,25 @@ def choose_category():
   else: return category.stdout.decode("UTF-8")
 
 ''' Rofi window to select the game you want to see more about '''
-def choose_game(category, games):
+def choose_game(category, games, title_lengths):
   _GO_UP = "...Choose Category\n"
+  _GAME_LENGTH_ADDON = 3
   rofi_string = _GO_UP
+  longest_title = 0
   if(category == Categories.TOP_PC.value):
     _table = Tables.TOP_PC.value
+    longest_title = title_lengths['longest_pc_title']
     for game in games['top_pc_games']:
-      rofi_string+=(f"{stretch_string(game[DB_Indices.TITLE.value]):45s} ${game[DB_Indices.SALE_PRICE.value]:.2f}\n")
+      rofi_string+=(f"{stretch_string(game[DB_Indices.TITLE.value], longest_title)} ${game[DB_Indices.SALE_PRICE.value]:.2f}\n")
   elif(category == Categories.TOP_PS.value):
     _table = Tables.TOP_PS.value
+    longest_title = title_lengths['longest_ps_title']
     for game in games['top_ps_games']:
-      if(game[DB_Indices.SALE_PRICE.value] == PS.ps_plus_price()): rofi_string+=(f"{stretch_string(game[DB_Indices.TITLE.value]):45s} $PS+")
-      else: rofi_string+=(f"{stretch_string(game[DB_Indices.TITLE.value]):45s} ${game[DB_Indices.SALE_PRICE.value]:.2f}")
+      if(game[DB_Indices.SALE_PRICE.value] == PS.ps_plus_price()): rofi_string+=(f"{stretch_string(game[DB_Indices.TITLE.value], longest_title)} $PS+")
+      else: rofi_string+=(f"{stretch_string(game[DB_Indices.TITLE.value], longest_title)} ${game[DB_Indices.SALE_PRICE.value]:.2f}")
       rofi_string+="\n"
   else: return None, None
-  chosen_game = subprocess.run(["rofi", "-dmenu", "-p", "Search game", "-lines", "12", "-columns", "2"], stdout=subprocess.PIPE, input=str.encode(rofi_string, encoding="UTF-8"))
+  chosen_game = subprocess.run(["rofi", "-dmenu", "-p", "Search game", "-lines", "12", "-columns", "2", "-width", f"{(longest_title+_GAME_LENGTH_ADDON)}"], stdout=subprocess.PIPE, input=str.encode(rofi_string, encoding="UTF-8"))
   if(chosen_game.returncode == 0): chosen_game = chosen_game.stdout.decode("UTF-8").split("$")[0].rstrip()
   else: chosen_game = None
   return chosen_game, _table
@@ -85,10 +89,10 @@ def open_url(url):
   if(choice == yes): subprocess.run(["firefox", url])
 
 def stretch_string(string, length=None):
-  # if(len(string) >= length):
-  #   difference = len(string) - length
-  #   string = string[:-difference-3] + "..."
-  # else:
-  #   for _ in range(length-len(string)):
-  #     string += " "
+  if(len(string) >= length):
+    difference = len(string) - length
+    string = string[:-difference-3] + "..."
+  else:
+    for _ in range(length-len(string)):
+      string += " "
   return string

@@ -17,7 +17,7 @@ from datetime import timedelta
 
 from src.platforms.pc import PC
 from src.platforms.ps import PS
-from src.utils.db_calls import  Tables
+from src.utils.db_calls import  DB_Calls, Tables
 from src.utils.utils import get_top_games, launch_rofi, check_args
 
 
@@ -46,17 +46,20 @@ if __name__ == "__main__":
   # DB_Calls.update_pc_games(cur, args.pc)
   # DB_Calls.update_ps_games(cur, args.ps)
 
-  ''' Update / gather the PC games '''
+  ''' Update / gather the top games '''
   top_pc_games = get_top_games(cur, Tables.TOP_PC.value, PC, CUSTOM_UPDATE_DELAY, PC_UPPER_PRICE)
-  
-  ''' Update / gather the Playstation games '''
-  top_ps_games = get_top_games(cur, Tables.TOP_PS.value, PS, CUSTOM_UPDATE_DELAY)  
+  top_ps_games = get_top_games(cur, Tables.TOP_PS.value, PS, CUSTOM_UPDATE_DELAY)
+
+  ''' totally unnecessary but it looks nice to have width exactly proportional  ''' 
+  longest_pc_title = DB_Calls.get_longest_title(cur, Tables.TOP_PC.value)
+  longest_ps_title = DB_Calls.get_longest_title(cur, Tables.TOP_PS.value)
 
   ''' Gather all games into dictionary for convenience '''
   games = {'top_pc_games': top_pc_games, 'top_ps_games': top_ps_games}
+  title_lengths = {'longest_pc_title': longest_pc_title, 'longest_ps_title': longest_ps_title} 
 
   ''' Rofi window logic loop '''
-  launch_rofi(cur, games)
+  launch_rofi(cur, games, title_lengths)
 
   con.commit()
   con.close()

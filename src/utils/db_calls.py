@@ -86,6 +86,11 @@ class DB_Calls:
     else:
       return None
 
+  ''' Simple function to get the longest title from the given table '''
+  @staticmethod
+  def get_longest_title(cur, table):
+    return cur.execute(f"""SELECT title_length FROM {table} ORDER BY title_length DESC""").fetchone()[0]
+
   ''' Determine if the top deals need to be updated based on update_delay. The 
       function first checks to see if an entry even exists, if one does then it
       will check the elapsed time.
