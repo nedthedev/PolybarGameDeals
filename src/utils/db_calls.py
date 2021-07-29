@@ -43,7 +43,7 @@ class DB_Calls:
     try:
       cur.execute(f"""SELECT SALE_PRICE FROM {table}""")
     except Exception:
-      cur.execute(f"""CREATE TABLE {table}(title TEXT NOT NULL UNIQUE, full_price REAL, sale_price REAL, cover_image TEXT, url TEXT NOT NULL UNIQUE, update_time TEXT, title_length INTEGER);""")
+      cur.execute(f"""CREATE TABLE {table}(title TEXT NOT NULL UNIQUE, full_price REAL, sale_price REAL, cover_image TEXT, url TEXT NOT NULL UNIQUE, update_time TEXT, title_length INTEGER)""")
     return cur.execute(f"""SELECT * FROM {table} ORDER BY sale_price ASC""").fetchall()
 
   ''' Add top deals to the database. Since top deals will time out and not exist
@@ -81,10 +81,8 @@ class DB_Calls:
   @staticmethod
   def get_game_url(cur, table, title):
     url = cur.execute(f"""SELECT url FROM {table} WHERE TITLE=?""", (title, )).fetchone()
-    if(url):
-      return url[0]
-    else:
-      return None
+    if(url): return url[0]
+    else: return None
 
   ''' Simple function to get the longest title from the given table '''
   @staticmethod
@@ -97,11 +95,8 @@ class DB_Calls:
   '''
   @classmethod
   def needs_updating(cls, cur, table, update_delay=None):
-    try:
-      game = cur.execute(f"""SELECT * FROM {table};""").fetchone()
-      past_time = cls.__str_to_dt(game[DB_Indices.UPDATE_TIME.value])
-    except:
-      return True
+    try: past_time = cls.__str_to_dt(cur.execute(f"""SELECT update_time FROM {table}""").fetchone()[0])
+    except: return True
     if(not update_delay):
       update_delay = cls._UPDATE_DELAY
     return ((datetime.now() - past_time) > update_delay)
