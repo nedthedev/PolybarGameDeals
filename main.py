@@ -18,7 +18,8 @@ from datetime import timedelta
 from src.platforms.pc import PC
 from src.platforms.ps import PS
 from src.utils.db_calls import  DB_Calls, Tables
-from src.utils.utils import get_top_games, launch_rofi, check_args
+from src.utils.utils import get_top_games, check_args
+from src.utils.rofi import launch_rofi
 
 
 
