@@ -138,3 +138,5 @@ dmypy.json
 cython_debug/
 
 games.db
+tests.py
+test.db
