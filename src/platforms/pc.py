@@ -14,7 +14,7 @@ class PC:
   _YOUR_DEALS_URL = "https://www.cheapshark.com/api/1.0/games?ids="
   _TOP_DEALS_URL = "https://www.cheapshark.com/api/1.0/deals?upperPrice="
   _DEAL_URL = "https://www.cheapshark.com/redirect?dealID="
-
+  _GAME_LOOKUP_URL = "https://www.cheapshark.com/api/1.0/games?title="
 
 
   ############################
