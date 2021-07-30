@@ -17,6 +17,7 @@ class PS:
   _YOUR_DEALS_URL = "https://psdeals.net/us-store/game/"
   _PS_DEALS_URL = "https://psdeals.net"
   _PS_STORE_URL = "https://store.playstation.com/en-us/product/"
+  _GAME_LOOKUP_URL = "https://psdeals.net/us-store/search?search_query="
   _SLEEP_DURATION = 5 # the number of seconds to sleep between page requests
   _PS_PLUS_PRICE = "99.99" # a default price for PS+ only deals (arbitrary)
 
@@ -86,7 +87,10 @@ class PS:
       if(full_price): full_price = float(full_price.text[1:])
 
       sale_price = game.find("span", {"class": ["game-collection-item-discount-price"]})
-      if(sale_price): sale_price = float(sale_price.text[1:])
+      if(sale_price): 
+        ''' Try to convert to float, if it fails then the game is "FREE"! '''
+        try: sale_price = float(sale_price.text[1:])
+        except: sale_price = 0.00
       else: sale_price = cls._PS_PLUS_PRICE
 
       ''' There are many different indicators of time left for the deal, so I

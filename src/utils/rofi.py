@@ -16,6 +16,11 @@ from ..platforms.ps import PS
 class Categories(Enum):
   TOP_PC = "Top PC Deals\n"
   TOP_PS = "Top Playstation Deals\n"
+  # PC_WISHLIST = "PC Wishlist\n"
+  # PS_WISHLIST = "Playstation Wishlist\n"
+  # PC_BROWSE = "Search for PC Games\n"
+  # PS_BROWSER = "Search for Playstation Games\n"
+
 
 ''' The main rofi logic loop wrapped in a function '''
 def launch_rofi(cur, games, title_lengths, browser):

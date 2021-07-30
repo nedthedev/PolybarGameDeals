@@ -11,9 +11,9 @@ from enum import Enum
 
 class Tables(Enum):
   TOP_PC = "TOP_PC"
-  # YOUR_PC = "YOUR_PC"
+  PC_WISHLIST = "PC_WISHLIST"
   TOP_PS = "TOP_PS"
-  # YOUR_PS = "YOUR_PS"
+  PS_WISHLIST = "PS_WISHLIST"
   
 class DB_Indices(Enum):
   TITLE = 0
