@@ -21,6 +21,7 @@ class Categories(Enum):
   # PC_BROWSE = "Search for PC Games\n"
   # PS_BROWSER = "Search for Playstation Games\n"
 
+
 ''' The main rofi logic loop wrapped in a function '''
 def launch_rofi(cur, games, title_lengths, browser):
   while(True):
