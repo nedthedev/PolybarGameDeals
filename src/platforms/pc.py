@@ -24,22 +24,22 @@ class PC:
       If an upper_price is provided no deals greater than that amount will be
       discovered. 
   '''
-  @classmethod
-  def get_top_deals(cls, upper_price=None):
-    if(upper_price == None): upper_price = cls._UPPER_PRICE
+  @staticmethod
+  def get_top_deals(upper_price=None):
+    if(upper_price == None): upper_price = PC._UPPER_PRICE
 
-    data = cls.__make_request(f"{cls._TOP_DEALS_URL}{upper_price}")
+    data = PC.__make_request(f"{PC._TOP_DEALS_URL}{upper_price}")
     if(data):
-      data = cls.__parse_data(data)
+      data = PC.__parse_data(data)
       return data
     return None
 
-  @classmethod
-  def get_your_deals(cls, ids):
-    data = cls.__make_request(f"{cls._YOUR_DEALS_URL}{ids}")
-    if(data):
-      data = cls.__parse_data(data)
-      return data
+  @staticmethod
+  def get_your_deals(ids):
+    # data = cls.__make_request(f"{cls._YOUR_DEALS_URL}{ids}")
+    # if(data):
+    #   data = cls.__parse_data(data)
+    #   return data
     return None
 
 
@@ -56,8 +56,8 @@ class PC:
     return None
 
   ''' Parse the deals '''
-  @classmethod
-  def __parse_data(cls, data):
+  @staticmethod
+  def __parse_data(data):
     parsed_data = []
     titles = []
     for game in data:
@@ -65,7 +65,7 @@ class PC:
       full_price = float(game["normalPrice"])
       sale_price = float(game["salePrice"])
       cover_image = game["thumb"]
-      url = f"{cls._DEAL_URL}{game['dealID']}"
+      url = f"{PC._DEAL_URL}{game['dealID']}"
 
       ''' 
       Unfortunately, or fortunately?, the api can have lots of duplicates, some with different prices, so I must do some checking to remove dupes.

@@ -27,23 +27,23 @@ class PS:
   '''   "PUBLIC" METHODS   '''
   ############################
   ''' Fetches the top deals pages, scrapes them, and gathers the relevant data '''
-  @classmethod
-  def get_top_deals(cls, pages=None, upper_price=None):
+  @staticmethod
+  def get_top_deals(pages=None, upper_price=None):
     ''' set the number of pages to fetch '''
-    if(pages == None): pages = cls._TOP_DEALS_PAGES
+    if(pages == None): pages = PS._TOP_DEALS_PAGES
     
     parsed_data = []
     for _page in range(pages):
       ''' Make the request to download the pages '''
-      data = cls.__make_request(f"{cls._TOP_DEALS_URL}{_page+1}")
+      data = PS.__make_request(f"{PS._TOP_DEALS_URL}{_page+1}")
       
       ''' if data was retrieved then parse it, otherwise return none '''
-      if(data): parsed_data.append(cls.__parse_top_deals(data.text))
+      if(data): parsed_data.append(PS.__parse_top_deals(data.text))
       else: return None
     
       ''' Sleep unless we just fetched the last page '''
       if(not _page+1 == pages):
-        time.sleep(cls._SLEEP_DURATION)
+        time.sleep(PS._SLEEP_DURATION)
 
     ''' Join the pages of games into one list '''
     joined_list = []
@@ -52,12 +52,12 @@ class PS:
     return joined_list
 
   ''' A utility method to return the class variable _PS_PLUS_PRICE '''
-  @classmethod
-  def ps_plus_price(cls):
-    return float(cls._PS_PLUS_PRICE)
+  @staticmethod
+  def ps_plus_price():
+    return float(PS._PS_PLUS_PRICE)
 
-  @classmethod
-  def get_your_deals(cls):
+  @staticmethod
+  def get_your_deals(upper_price=None):
     return
 
   
@@ -74,8 +74,8 @@ class PS:
     return None
 
   ''' The deal page scraper and data parser '''
-  @classmethod
-  def __parse_top_deals(cls, data):
+  @staticmethod
+  def __parse_top_deals(data):
     html = BeautifulSoup(data, "html.parser")
     games = html.find_all("div", {"class": ["game-collection-item-col"]})
     parsed_data = []
@@ -91,7 +91,7 @@ class PS:
         ''' Try to convert to float, if it fails then the game is "FREE"! '''
         try: sale_price = float(sale_price.text[1:])
         except: sale_price = 0.00
-      else: sale_price = cls._PS_PLUS_PRICE
+      else: sale_price = PS._PS_PLUS_PRICE
 
       ''' There are many different indicators of time left for the deal, so I
           must handle whether or not it's days, hours, or doesn't exist 
@@ -116,7 +116,7 @@ class PS:
         cover_image = None
         gid = None
 
-      parsed_data.append({"title": title, "full_price": full_price, "sale_price": sale_price, "cover_image": cover_image, "days_remaining": days_remaining, "url": f"{cls._PS_DEALS_URL}{ps_deals_url}", "pss_url": f"{cls._PS_STORE_URL}{gid}", "title_length": f"{len(title)}"})
+      parsed_data.append({"title": title, "full_price": full_price, "sale_price": sale_price, "cover_image": cover_image, "days_remaining": days_remaining, "url": f"{PS._PS_DEALS_URL}{ps_deals_url}", "pss_url": f"{PS._PS_STORE_URL}{gid}", "title_length": f"{len(title)}"})
     return parsed_data
 
   @staticmethod
