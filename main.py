@@ -20,8 +20,15 @@ from src.platforms.pc import PC
 from src.platforms.ps import PS
 from src.utils.db_calls import  DB_Calls, Tables
 from src.utils.rofi import launch_rofi
+from src.platforms.ps import PS
 
 
+
+#####################
+'''   VARIABLES   '''
+#####################
+CUSTOM_UPDATE_DELAY = None # timedelta(seconds=0, minutes=30, hours=0, days=0)
+PC_UPPER_PRICE = 10
 
 ''' Scan for arguments to manage the "wishlist" games '''
 def check_args():
@@ -38,7 +45,7 @@ def check_args():
   return parser.parse_args()
 
 ''' Returns all the games in the database from the given table and calls methods from cls '''
-def get_games(cur, table, download_games_function, update_delay=None, upper_price=None, ids=None):
+def get_top_games(cur, table, download_games_function, update_delay=None, upper_price=None, ids=None):
   if(DB_Calls.needs_updating(cur, table, update_delay)):
     old_top = DB_Calls.get_data(cur, table)
     new_top = download_games_function(upper_price)
@@ -46,11 +53,7 @@ def get_games(cur, table, download_games_function, update_delay=None, upper_pric
       DB_Calls.add_top_deals(cur, table, old_top, new_top)
   return DB_Calls.get_data(cur, table)
 
-#####################
-'''   VARIABLES   '''
-#####################
-CUSTOM_UPDATE_DELAY = None # timedelta(seconds=0, minutes=30, hours=0, days=0)
-PC_UPPER_PRICE = 10
+
 
 ######################
 '''   MAIN BLOCK   '''
@@ -66,15 +69,19 @@ if __name__ == "__main__":
   ''' Check for any arguments '''
   args = check_args()
 
-  ''' Add any new games '''
-  # DB_Calls.update_pc_games(cur, args.pc)
-  # DB_Calls.update_ps_games(cur, args.ps)
-
   ''' Update / gather the top games '''
-  top_pc_games = get_games(cur, Tables.TOP_PC.value, PC.get_top_deals, CUSTOM_UPDATE_DELAY, PC_UPPER_PRICE)
-  top_ps_games = get_games(cur, Tables.TOP_PS.value, PS.get_top_deals, CUSTOM_UPDATE_DELAY)
-  pc_wishlist_games = get_games(cur, Tables.PC_WISHLIST.value, PC.get_your_deals, CUSTOM_UPDATE_DELAY, PC_UPPER_PRICE)
-  ps_wishlist_games = get_games(cur, Tables.PS_WISHLIST.value, PS.get_your_deals, CUSTOM_UPDATE_DELAY)
+  top_pc_games = get_top_games(cur, Tables.TOP_PC.value, PC.get_top_deals, CUSTOM_UPDATE_DELAY, PC_UPPER_PRICE)
+  top_ps_games = get_top_games(cur, Tables.TOP_PS.value, PS.get_top_deals, CUSTOM_UPDATE_DELAY)
+  pc_wishlist_games = DB_Calls.get_data(cur, Tables.PC_WISHLIST.value)
+  ps_wishlist_games = DB_Calls.get_data(cur, Tables.PS_WISHLIST.value)
+
+  ''' Add any new games '''
+  if(args.pc):
+    DB_Calls.add_pc_games(cur, Tables.PC_WISHLIST.value, args.pc)
+    pc_wishlist_games = DB_Calls.get_data(cur, Tables.PC_WISHLIST.value)
+  if(args.ps):
+    DB_Calls.add_ps_games(cur, Tables.PS_WISHLIST.value, args.ps)
+    ps_wishlist_games = DB_Calls.get_data(cur, Tables.PS_WISHLIST.value)
 
   ''' Totally unnecessary but it looks nice to have width exactly proportional  ''' 
   longest_pc_title = DB_Calls.get_longest_title(cur, Tables.TOP_PC.value)
@@ -84,7 +91,7 @@ if __name__ == "__main__":
 
   ''' Gather all games into dictionary for convenience '''
   games = {Tables.TOP_PC.value: top_pc_games, Tables.TOP_PS.value: top_ps_games, Tables.PC_WISHLIST.value: pc_wishlist_games, Tables.PS_WISHLIST.value: ps_wishlist_games}
-  title_lengths = {'longest_top_pc_title': longest_pc_title, 'longest_top_ps_title': longest_ps_title, 'longest_pc_wishlist_title': longest_pc_wishlist_title, 'longest_ps_wishlist_title': longest_ps_wishlist_title} 
+  title_lengths = {Tables.TOP_PC.value: longest_pc_title, Tables.TOP_PS.value: longest_ps_title, Tables.PC_WISHLIST.value: longest_pc_wishlist_title, Tables.PS_WISHLIST.value: longest_ps_wishlist_title} 
 
   ''' Rofi window logic loop '''
   if(not args.silent):

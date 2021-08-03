@@ -9,6 +9,9 @@
 from datetime import datetime, timedelta
 from enum import Enum
 
+from ..platforms.pc import PC
+from ..platforms.ps import PS
+
 class Tables(Enum):
   TOP_PC = "TOP_PC"
   PC_WISHLIST = "PC_WISHLIST"
@@ -21,7 +24,9 @@ class DB_Indices(Enum):
   SALE_PRICE = 2
   COVER_IMAGE = 3
   URL = 4
-  UPDATE_TIME = 5
+  GID = 5
+  UPDATE_TIME = 6
+  TITLE_LENGTH = 7
 
 class DB_Calls:
   #####################
@@ -43,7 +48,7 @@ class DB_Calls:
     try:
       cur.execute(f"""SELECT SALE_PRICE FROM {table}""")
     except Exception:
-      cur.execute(f"""CREATE TABLE {table}(title TEXT NOT NULL UNIQUE, full_price REAL, sale_price REAL, cover_image TEXT, url TEXT NOT NULL UNIQUE, update_time TEXT, title_length INTEGER)""")
+      cur.execute(f"""CREATE TABLE {table}(title TEXT NOT NULL UNIQUE, full_price REAL, sale_price REAL, cover_image TEXT, url TEXT NOT NULL UNIQUE, gid INTEGER UNIQUE, update_time TEXT, title_length INTEGER)""")
     return cur.execute(f"""SELECT * FROM {table} ORDER BY sale_price ASC""").fetchall()
 
   ''' Add top deals to the database. Since top deals will time out and not exist
@@ -75,7 +80,7 @@ class DB_Calls:
       if(cur.execute(f"SELECT * FROM {table} WHERE TITLE=?", (game['title'], )).fetchone()):
         cur.execute(f"""UPDATE {table} SET sale_price=?, url=?, update_time=? WHERE TITLE=?""", (game['sale_price'], game['url'], datetime.now(), game['title']))
       else:
-        cur.execute(f"""INSERT INTO {table} VALUES(?, ?, ?, ?, ?, ?, ?)""", (game['title'], game['full_price'], game['sale_price'], game['cover_image'], game['url'], datetime.now(), len(game['title'])))
+        cur.execute(f"""INSERT INTO {table} VALUES(?, ?, ?, ?, ?, ?, ?, ?)""", (game['title'], game['full_price'], game['sale_price'], game['cover_image'], game['url'], game['gid'], datetime.now(), len(game['title'])))
 
   @staticmethod
   def delete_game(cur, table, title):
@@ -88,6 +93,32 @@ class DB_Calls:
         del games[table][index]
         cur.execute(f"""DELETE FROM {table} WHERE TITLE=?""", (title, ))
         return games
+
+  @staticmethod
+  def add_ps_games(cur, table, urls):
+    time = datetime.now()
+    games = []
+    for url in urls:
+      gid = PS.get_gid(url)
+      if(PS.is_valid(url) and not cur.execute(f"""SELECT url FROM {table} WHERE URL=? OR GID=?""", (url, gid)).fetchone()):
+        games.append(DB_Calls.add_ps_game(cur, table, url, time))
+    return games
+      
+  @staticmethod 
+  def add_ps_game(cur, table, url, time):
+    game = PS.get_and_parse(url, PS._parse_your_deals)
+    cur.execute(f"""INSERT INTO {table} VALUES(?, ?, ?, ?, ?, ?, ?, ?)""", (game['title'], game['full_price'], game['sale_price'], game['cover_image'], game['url'], game['gid'], time, len(game['title'])))
+    return game
+
+  # @staticmethod
+  # def add_wishlist_games(cur, table, cls, games):
+  #   for game in games:
+  #     if(cls.is_valid(game)):
+  #       DB_Calls.add_wishlist_game(cur, table, game)
+
+  # @staticmethod
+  # def add_wishlist_game(cur, table, game):
+  #   url = cur.execute(f"""SELECT url FROM {table} WHERE TITLE=?""", (title, )).fetchone()
 
   ''' Fetch a game's url given the title and table of the game '''
   @staticmethod

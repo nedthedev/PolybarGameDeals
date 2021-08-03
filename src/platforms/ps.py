@@ -4,8 +4,10 @@
   This script is for fetching and parsing the Playstation deals, deals from psdeals.net
 '''
 
+from sqlite3.dbapi2 import converters
 import requests
 import time
+import re
 from bs4 import BeautifulSoup
 
 class PS:
@@ -34,11 +36,8 @@ class PS:
     
     parsed_data = []
     for _page in range(pages):
-      ''' Make the request to download the pages '''
-      data = PS.__make_request(f"{PS._TOP_DEALS_URL}{_page+1}")
-      
-      ''' if data was retrieved then parse it, otherwise return none '''
-      if(data): parsed_data.append(PS.__parse_top_deals(data.text))
+      tmp = PS.get_and_parse(f"{PS._TOP_DEALS_URL}{_page+1}", PS._parse_top_deals)
+      if(tmp): parsed_data.append(tmp)
       else: return None
     
       ''' Sleep unless we just fetched the last page '''
@@ -57,17 +56,38 @@ class PS:
     return float(PS._PS_PLUS_PRICE)
 
   @staticmethod
-  def get_your_deals(upper_price=None):
-    return
+  def get_your_deals(urls=None):
+    data = []
+    for url in urls:
+      game = PS.get_and_parse(url, PS._parse_your_deals)
+      print(game)
+      data.append(game)
 
-  
+  @staticmethod
+  def is_valid(url):
+    return re.search(fr"^{PS._PS_DEALS_URL}/..-store/game/\d+/.*", url)
+
+  @staticmethod
+  def get_gid(url):
+    return url.split("game/")[1].split("/")[0]
+
+  @staticmethod
+  def get_and_parse(url, parser):
+    ''' Make the request to download the pages '''
+    data = PS._make_request(url)
+    
+    ''' if data was retrieved then parse it, otherwise return none '''
+    if(data): return parser(data.text, url)
+    else: return None
+
+
 
   #############################
   '''   "PRIVATE" METHODS   '''
   #############################
   ''' Makes a request for the provided url '''
   @staticmethod
-  def __make_request(url):
+  def _make_request(url):
     r = requests.get(url)
     if(r.status_code == 200):
       return r
@@ -75,7 +95,7 @@ class PS:
 
   ''' The deal page scraper and data parser '''
   @staticmethod
-  def __parse_top_deals(data):
+  def _parse_top_deals(data, _):
     html = BeautifulSoup(data, "html.parser")
     games = html.find_all("div", {"class": ["game-collection-item-col"]})
     parsed_data = []
@@ -106,19 +126,38 @@ class PS:
       else: days_remaining = -1
 
       ps_deals_url = game.find("span", {"itemprop": ["url"]})
-      if(ps_deals_url): ps_deals_url = ps_deals_url.text
+      if(ps_deals_url): 
+        ps_deals_url = ps_deals_url.text
+        psdeals_gid = PS.get_gid(ps_deals_url)
 
       cover_image = game.find("source")
       if(cover_image):
         cover_image = cover_image["data-srcset"].split(", ")[1].split(" ")[0]
-        gid = cover_image.split("/99/")[1].split("/0/")[0]
+        pss_gid = cover_image.split("/99/")[1].split("/0/")[0]
       else:
         cover_image = None
-        gid = None
+        pss_gid = None
 
-      parsed_data.append({"title": title, "full_price": full_price, "sale_price": sale_price, "cover_image": cover_image, "days_remaining": days_remaining, "url": f"{PS._PS_DEALS_URL}{ps_deals_url}", "pss_url": f"{PS._PS_STORE_URL}{gid}", "title_length": f"{len(title)}"})
+      parsed_data.append({"title": title, "full_price": full_price, "sale_price": sale_price, "cover_image": cover_image, "gid": psdeals_gid, "days_remaining": days_remaining, "url": f"{PS._PS_DEALS_URL}{ps_deals_url}", "pss_url": f"{PS._PS_STORE_URL}{pss_gid}", "title_length": f"{len(title)}"})
     return parsed_data
 
   @staticmethod
-  def _parse_your_deals(data):
-    return
+  def _parse_your_deals(data, url):
+    html = BeautifulSoup(data, "html.parser")
+    title = html.find("div", {"class": ["game-title-info-name"]})
+    if(title): title = title.text.rstrip() # some titles have trailing space
+
+    full_price = html.find("span", {"class": ["game-collection-item-regular-price"]})
+    if(full_price): full_price = float(full_price.text[1:])
+
+    sale_price = html.find("span", {"class": ["game-collection-item-discount-price"]})
+    if(sale_price): sale_price = float(sale_price.text[1:])
+    else: sale_price = full_price
+
+    cover_image = html.find("source")
+    if(cover_image):
+      cover_image = cover_image["data-srcset"].split(", ")[1].split(" ")[0]
+
+    gid = PS.get_gid(url)
+
+    return {"title": title, "full_price": full_price, "sale_price": sale_price, "cover_image": cover_image, "gid": gid, "url": url, "title_length": len(title)}

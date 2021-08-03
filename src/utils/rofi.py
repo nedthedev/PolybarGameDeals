@@ -58,10 +58,19 @@ def launch_rofi(cur, games, title_lengths, browser):
                     else: break
                 elif(wishlist_option == WishlistGameOptions.ADD_GAME.value):
                   while(True):
-                    url = url_prompt()
+                    url = add_game_url()
                     if(url): 
-                      print(url)
-                      break
+                      if(chosen_wishlist == WishlistOptions.PC.value):
+                        if(PC.is_valid(url)):
+                          print("Adding new game")
+                        else:
+                          print("Invalid game url")
+                      elif(chosen_wishlist == WishlistOptions.PS.value):
+                        if(PS.is_valid(url)):
+                          print("Adding new game")
+                        else:
+                          print("Invalid game url")
+                      else: break
                     else: break 
                 else: break
               else: break
@@ -89,20 +98,20 @@ def choose_game(category, games, title_lengths):
   longest_title = 0
   if(category == Categories.TOP_PC.value):
     _table = Tables.TOP_PC.value
-    longest_title = title_lengths['longest_top_pc_title']
-    rofi_string = form_pc_string(rofi_string, games[Tables.TOP_PC.value], longest_title)
+    longest_title = title_lengths[_table]
+    rofi_string = form_pc_string(rofi_string, games[_table], longest_title)
   elif(category == Categories.TOP_PS.value):
     _table = Tables.TOP_PS.value
-    longest_title = title_lengths['longest_top_ps_title']
-    rofi_string = form_ps_string(rofi_string, games[Tables.TOP_PS.value], longest_title)
+    longest_title = title_lengths[_table]
+    rofi_string = form_ps_string(rofi_string, games[_table], longest_title)
   elif(category == Categories.PC_WISHLIST.value or category == WishlistOptions.PC.value):
     _table = Tables.PC_WISHLIST.value
-    longest_title = title_lengths['longest_pc_wishlist_title']
-    rofi_string = form_pc_string(rofi_string, games[Tables.PC_WISHLIST.value], longest_title)
+    longest_title = title_lengths[_table]
+    rofi_string = form_pc_string(rofi_string, games[_table], longest_title)
   elif(category == Categories.PS_WISHLIST.value or category == WishlistOptions.PS.value):
     _table = Tables.PS_WISHLIST.value
-    longest_title = title_lengths['longest_ps_wishlist_title']
-    rofi_string = form_ps_string(rofi_string, games[Tables.PS_WISHLIST.value], longest_title)
+    longest_title = title_lengths[_table]
+    rofi_string = form_ps_string(rofi_string, games[_table], longest_title)
   else: return None, None
   chosen_game = subprocess.run(["rofi", "-dmenu", "-p", "", "-lines", "12", "-columns", "2", "-width", f"{(longest_title+_GAME_LENGTH_ADDON)}"], stdout=subprocess.PIPE, input=str.encode(rofi_string, encoding="UTF-8"))
   if(chosen_game.returncode == 0): chosen_game = chosen_game.stdout.decode("UTF-8").split("$")[0].rstrip()
@@ -120,7 +129,7 @@ def confirmed(prompt):
   else: return False
 
 ''' Rofi window confirming whether or not you want to open the link '''
-def url_prompt():
+def add_game_url():
   choice = subprocess.run(["rofi", "-dmenu", "-p", "Enter url of game to add", "-lines", "1", "-columns", "1"], input=str.encode(f"", encoding="UTF-8"), stdout=subprocess.PIPE)
   if(choice.returncode > 0): return None
   else: return choice.stdout.decode("UTF-8")
