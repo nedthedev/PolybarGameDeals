@@ -7,26 +7,10 @@
 '''
 
 from datetime import datetime, timedelta
-from enum import Enum
 
+from .db_enums import DB_Indices, DB_Columns
 from ..platforms.pc import PC
 from ..platforms.ps import PS
-
-class Tables(Enum):
-  TOP_PC = "TOP_PC"
-  PC_WISHLIST = "PC_WISHLIST"
-  TOP_PS = "TOP_PS"
-  PS_WISHLIST = "PS_WISHLIST"
-  
-class DB_Indices(Enum):
-  TITLE = 0
-  FULL_PRICE = 1
-  SALE_PRICE = 2
-  COVER_IMAGE = 3
-  URL = 4
-  GID = 5
-  UPDATE_TIME = 6
-  TITLE_LENGTH = 7
 
 class DB_Calls:
   #####################
@@ -77,10 +61,10 @@ class DB_Calls:
         games that are new entries to the database.
     '''
     for game in new_games: 
-      if(cur.execute(f"SELECT * FROM {table} WHERE TITLE=?", (game['title'], )).fetchone()):
-        cur.execute(f"""UPDATE {table} SET sale_price=?, url=?, update_time=? WHERE TITLE=?""", (game['sale_price'], game['url'], datetime.now(), game['title']))
+      if(cur.execute(f"SELECT * FROM {table} WHERE TITLE=?", (game[DB_Columns.TITLE.value], )).fetchone()):
+        cur.execute(f"""UPDATE {table} SET sale_price=?, url=?, update_time=? WHERE TITLE=?""", (game[DB_Columns.SALE_PRICE.value], game[DB_Columns.URL.value], datetime.now(), game[DB_Columns.TITLE.value]))
       else:
-        cur.execute(f"""INSERT INTO {table} VALUES(?, ?, ?, ?, ?, ?, ?, ?)""", (game['title'], game['full_price'], game['sale_price'], game['cover_image'], game['url'], game['gid'], datetime.now(), len(game['title'])))
+        cur.execute(f"""INSERT INTO {table} VALUES(?, ?, ?, ?, ?, ?, ?, ?)""", (game[DB_Columns.TITLE.value], game[DB_Columns.FULL_PRICE.value], game[DB_Columns.SALE_PRICE.value], game[DB_Columns.COVER_IMAGE.value], game[DB_Columns.URL.value], game[DB_Columns.GID.value], datetime.now(), len(game['title'])))
 
   @staticmethod
   def delete_game(cur, table, title):
@@ -98,31 +82,39 @@ class DB_Calls:
   def add_pc_games(cur, table, ids):
     time = datetime.now()
     id_string = ""
+    update_ids = []
     for index, id in enumerate(ids):
-      if(PC.is_valid(id) and not cur.execute(f"""SELECT url FROM {table} WHERE gid=?""", (id, )).fetchone()):
+      if(PC.is_valid(id)):
         if(not index == len(ids)-1): id_string += f"{id},"
         else: id_string += f"{id}"
+        if(cur.execute(f"""SELECT url FROM {table} WHERE gid=?""", (id, )).fetchone()):
+          update_ids.append(id)
     games = PC.get_wishlist_games(id_string)
     if(games):
       for game in games:
-        cur.execute(f"""INSERT INTO {table} VALUES(?, ?, ?, ?, ?, ?, ?, ?)""", (game['title'], game['full_price'], game['sale_price'], game['cover_image'], game['url'], game['gid'], time, len(game['title'])))
+        if(game[DB_Columns.GID.value] in update_ids):
+          cur.execute(f"""UPDATE {table} SET full_price=?, sale_price=?, url=?, update_time=? WHERE gid=?""", (game[DB_Columns.FULL_PRICE.value], game[DB_Columns.SALE_PRICE.value], game[DB_Columns.URL.value], time, game[DB_Columns.GID.value]))
+        else:
+          cur.execute(f"""INSERT INTO {table} VALUES(?, ?, ?, ?, ?, ?, ?, ?)""", (game[DB_Columns.TITLE.value], game[DB_Columns.FULL_PRICE.value], game[DB_Columns.SALE_PRICE.value], game[DB_Columns.COVER_IMAGE.value], game[DB_Columns.URL.value], game[DB_Columns.GID.value], time, len(game['title'])))
 
   @staticmethod
   def add_ps_games(cur, table, urls):
     time = datetime.now()
     games = []
+    existing_games = []
     for url in urls:
       gid = PS.get_gid(url)
-      if(PS.is_valid(url) and not cur.execute(f"""SELECT url FROM {table} WHERE URL=? OR GID=?""", (url, gid)).fetchone()):
-        games.append(DB_Calls.add_ps_game(cur, table, url, time))
+      if(PS.is_valid(url)):
+        if(cur.execute(f"""SELECT url, update_time FROM {table} WHERE URL=? OR GID=?""", (url, gid)).fetchone()):
+          existing_games.append(gid)
+        games.append(PS.get_and_parse(url, PS._parse_your_deals))
+    for game in games:
+      if(game[DB_Columns.GID.value] in existing_games):
+        cur.execute(f"""UPDATE {table} SET full_price=?, sale_price=?, update_time=? WHERE GID=?""", (game[DB_Columns.FULL_PRICE.value], game[DB_Columns.SALE_PRICE.value], time, game[DB_Columns.GID.value]))
+      else:
+        cur.execute(f"""INSERT INTO {table} VALUES(?, ?, ?, ?, ?, ?, ?, ?)""", (game[DB_Columns.TITLE.value], game[DB_Columns.FULL_PRICE.value], game[DB_Columns.SALE_PRICE.value], game[DB_Columns.COVER_IMAGE.value], game[DB_Columns.URL.value], game[DB_Columns.GID.value], time, len(game['title'])))
     return games
       
-  @staticmethod 
-  def add_ps_game(cur, table, url, time):
-    game = PS.get_and_parse(url, PS._parse_your_deals)
-    cur.execute(f"""INSERT INTO {table} VALUES(?, ?, ?, ?, ?, ?, ?, ?)""", (game['title'], game['full_price'], game['sale_price'], game['cover_image'], game['url'], game['gid'], time, len(game['title'])))
-    return game
-
   ''' Fetch a game's url given the title and table of the game '''
   @staticmethod
   def get_game_url(cur, table, title):
@@ -149,6 +141,34 @@ class DB_Calls:
     if(not update_delay):
       update_delay = DB_Calls._UPDATE_DELAY
     return ((datetime.now() - past_time) > update_delay)
+
+  @staticmethod
+  def pc_wishlist_needs_updating(cur, table, update_delay=None):
+    if(not update_delay):
+      update_delay = DB_Calls._UPDATE_DELAY
+    try:
+      ids_to_update = []
+      games = cur.execute(f"""SELECT gid, update_time FROM {table}""").fetchall()
+      for game in games:
+        if((datetime.now() - DB_Calls.__str_to_dt(game[1])) > update_delay):
+          ids_to_update.append(game[0])
+      return ids_to_update
+    except Exception:
+      return []
+
+  @staticmethod
+  def ps_wishlist_needs_updating(cur, table, update_delay=None):
+    if(not update_delay):
+      update_delay = DB_Calls._UPDATE_DELAY
+    try:
+      games_to_update = []
+      games = cur.execute(f"""SELECT url, update_time FROM {table}""").fetchall()
+      for game in games:
+        if((datetime.now() - DB_Calls.__str_to_dt(game[1])) > update_delay):
+          games_to_update.append(game[0])
+      return games_to_update
+    except Exception:
+      return []
 
 
 

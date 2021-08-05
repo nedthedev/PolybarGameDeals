@@ -7,9 +7,9 @@
 from enum import Enum
 import subprocess
 
-from .db_calls import DB_Calls, Tables, DB_Indices
+from .db_calls import DB_Calls
+from .db_enums import DB_Tables, DB_Indices
 from ..platforms.ps import PS
-from ..platforms.pc import PC
 
 
 
@@ -97,19 +97,19 @@ def choose_game(category, games, title_lengths):
   rofi_string = ""
   longest_title = 0
   if(category == Categories.TOP_PC.value):
-    _table = Tables.TOP_PC.value
+    _table = DB_Tables.TOP_PC.value
     longest_title = title_lengths[_table]
     rofi_string = form_pc_string(rofi_string, games[_table], longest_title)
   elif(category == Categories.TOP_PS.value):
-    _table = Tables.TOP_PS.value
+    _table = DB_Tables.TOP_PS.value
     longest_title = title_lengths[_table]
     rofi_string = form_ps_string(rofi_string, games[_table], longest_title)
   elif(category == Categories.PC_WISHLIST.value or category == WishlistOptions.PC.value):
-    _table = Tables.PC_WISHLIST.value
+    _table = DB_Tables.PC_WISHLIST.value
     longest_title = title_lengths[_table]
     rofi_string = form_pc_string(rofi_string, games[_table], longest_title)
   elif(category == Categories.PS_WISHLIST.value or category == WishlistOptions.PS.value):
-    _table = Tables.PS_WISHLIST.value
+    _table = DB_Tables.PS_WISHLIST.value
     longest_title = title_lengths[_table]
     rofi_string = form_ps_string(rofi_string, games[_table], longest_title)
   else: return None, None

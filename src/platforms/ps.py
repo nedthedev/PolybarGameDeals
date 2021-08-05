@@ -10,6 +10,8 @@ import time
 import re
 from bs4 import BeautifulSoup
 
+from .shared import create_game_dictionary
+
 class PS:
   #####################
   '''   VARIABLES   '''
@@ -56,7 +58,6 @@ class PS:
     data = []
     for url in urls:
       game = PS.get_and_parse(url, PS._parse_your_deals)
-      print(game)
       data.append(game)
 
   @staticmethod
@@ -124,18 +125,18 @@ class PS:
 
       ps_deals_url = game.find("span", {"itemprop": ["url"]})
       if(ps_deals_url): 
-        ps_deals_url = ps_deals_url.text
+        ps_deals_url = f"{PS._PS_DEALS_URL}{ps_deals_url.text}"
         psdeals_gid = PS.get_gid(ps_deals_url)
 
       cover_image = game.find("source")
       if(cover_image):
         cover_image = cover_image["data-srcset"].split(", ")[1].split(" ")[0]
-        pss_gid = cover_image.split("/99/")[1].split("/0/")[0]
+        # pss_gid = cover_image.split("/99/")[1].split("/0/")[0]
       else:
         cover_image = None
-        pss_gid = None
+        # pss_gid = None
 
-      parsed_data.append({"title": title, "full_price": full_price, "sale_price": sale_price, "cover_image": cover_image, "gid": psdeals_gid, "days_remaining": days_remaining, "url": f"{PS._PS_DEALS_URL}{ps_deals_url}", "pss_url": f"{PS._PS_STORE_URL}{pss_gid}", "title_length": f"{len(title)}"})
+      parsed_data.append(create_game_dictionary(title, full_price, sale_price, cover_image, psdeals_gid, ps_deals_url))
     return parsed_data
 
   @staticmethod
@@ -157,4 +158,4 @@ class PS:
 
     gid = PS.get_gid(url)
 
-    return {"title": title, "full_price": full_price, "sale_price": sale_price, "cover_image": cover_image, "gid": gid, "url": url, "title_length": len(title)}
+    return create_game_dictionary(title, full_price, sale_price, cover_image, gid, url)

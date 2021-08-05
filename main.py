@@ -15,14 +15,25 @@ import sqlite3
 import os
 from datetime import timedelta
 import argparse
+from enum import Enum
 
 from src.platforms.pc import PC
 from src.platforms.ps import PS
-from src.utils.db_calls import  DB_Calls, Tables
+from src.utils.db_enums import DB_Tables
+from src.utils.db_calls import DB_Calls
 from src.utils.rofi import launch_rofi
 from src.platforms.ps import PS
 
 
+
+class DB_Columns(Enum):
+  TITLE = "title"
+  FULL_PRICE = "full_price"
+  SALE_PRICE = "sale_price"
+  COVER_IMAGE = "cover_image"
+  GID = "gid"
+  URL = "url"
+  TITLE_LENGTH = "title_length"
 
 #####################
 '''   VARIABLES   '''
@@ -70,28 +81,42 @@ if __name__ == "__main__":
   args = check_args()
 
   ''' Update / gather the top games '''
-  top_pc_games = get_top_games(cur, Tables.TOP_PC.value, PC.get_top_deals, CUSTOM_UPDATE_DELAY, PC_UPPER_PRICE)
-  top_ps_games = get_top_games(cur, Tables.TOP_PS.value, PS.get_top_deals, CUSTOM_UPDATE_DELAY)
-  pc_wishlist_games = DB_Calls.get_data(cur, Tables.PC_WISHLIST.value)
-  ps_wishlist_games = DB_Calls.get_data(cur, Tables.PS_WISHLIST.value)
+  top_pc_games = get_top_games(cur, DB_Tables.TOP_PC.value, PC.get_top_deals, CUSTOM_UPDATE_DELAY, PC_UPPER_PRICE)
+  top_ps_games = get_top_games(cur, DB_Tables.TOP_PS.value, PS.get_top_deals, CUSTOM_UPDATE_DELAY)
+  pc_to_update = DB_Calls.pc_wishlist_needs_updating(cur, DB_Tables.PC_WISHLIST.value)
+  pc_wishlist_games = DB_Calls.get_data(cur, DB_Tables.PC_WISHLIST.value)
+  ps_to_update = DB_Calls.ps_wishlist_needs_updating(cur, DB_Tables.PS_WISHLIST.value)
+  ps_wishlist_games = DB_Calls.get_data(cur, DB_Tables.PS_WISHLIST.value)
 
   ''' Add any new games '''
-  if(args.pc):
-    DB_Calls.add_pc_games(cur, Tables.PC_WISHLIST.value, args.pc)
-    pc_wishlist_games = DB_Calls.get_data(cur, Tables.PC_WISHLIST.value)
-  if(args.ps):
-    DB_Calls.add_ps_games(cur, Tables.PS_WISHLIST.value, args.ps)
-    ps_wishlist_games = DB_Calls.get_data(cur, Tables.PS_WISHLIST.value)
+  if(args.pc or pc_to_update):
+    if(args.pc): pc_to_update += args.pc
+    DB_Calls.add_pc_games(cur, DB_Tables.PC_WISHLIST.value, pc_to_update)
+    pc_wishlist_games = DB_Calls.get_data(cur, DB_Tables.PC_WISHLIST.value)
+  if(args.ps or ps_to_update):
+    if(args.ps): ps_to_update += args.ps
+    DB_Calls.add_ps_games(cur, DB_Tables.PS_WISHLIST.value, ps_to_update)
+    ps_wishlist_games = DB_Calls.get_data(cur, DB_Tables.PS_WISHLIST.value)
 
   ''' Totally unnecessary but it looks nice to have width exactly proportional  ''' 
-  longest_pc_title = DB_Calls.get_longest_title(cur, Tables.TOP_PC.value)
-  longest_ps_title = DB_Calls.get_longest_title(cur, Tables.TOP_PS.value)
-  longest_pc_wishlist_title = DB_Calls.get_longest_title(cur, Tables.PC_WISHLIST.value)
-  longest_ps_wishlist_title = DB_Calls.get_longest_title(cur, Tables.PS_WISHLIST.value)
+  longest_pc_title = DB_Calls.get_longest_title(cur, DB_Tables.TOP_PC.value)
+  longest_ps_title = DB_Calls.get_longest_title(cur, DB_Tables.TOP_PS.value)
+  longest_pc_wishlist_title = DB_Calls.get_longest_title(cur, DB_Tables.PC_WISHLIST.value)
+  longest_ps_wishlist_title = DB_Calls.get_longest_title(cur, DB_Tables.PS_WISHLIST.value)
 
   ''' Gather all games into dictionary for convenience '''
-  games = {Tables.TOP_PC.value: top_pc_games, Tables.TOP_PS.value: top_ps_games, Tables.PC_WISHLIST.value: pc_wishlist_games, Tables.PS_WISHLIST.value: ps_wishlist_games}
-  title_lengths = {Tables.TOP_PC.value: longest_pc_title, Tables.TOP_PS.value: longest_ps_title, Tables.PC_WISHLIST.value: longest_pc_wishlist_title, Tables.PS_WISHLIST.value: longest_ps_wishlist_title} 
+  games = {
+    DB_Tables.TOP_PC.value: top_pc_games, 
+    DB_Tables.TOP_PS.value: top_ps_games, 
+    DB_Tables.PC_WISHLIST.value: pc_wishlist_games, 
+    DB_Tables.PS_WISHLIST.value: ps_wishlist_games
+  }
+  title_lengths = {
+    DB_Tables.TOP_PC.value: longest_pc_title, 
+    DB_Tables.TOP_PS.value: longest_ps_title, 
+    DB_Tables.PC_WISHLIST.value: longest_pc_wishlist_title, 
+    DB_Tables.PS_WISHLIST.value: longest_ps_wishlist_title
+  } 
 
   ''' Rofi window logic loop '''
   if(not args.silent):
