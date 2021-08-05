@@ -92,26 +92,27 @@ def choose_option(Options):
 ''' Rofi window to select the game you want to see more about '''
 def choose_game(category, games, title_lengths):
   _GO_UP = ""
-  _GAME_LENGTH_ADDON = 4
+  _GAME_LENGTH_ADDON = 14
+  _MIN_LENGTH = 60
 
   rofi_string = _GO_UP
   longest_title = 0
   if(category == Categories.TOP_PC.value):
     _table = DB_Tables.TOP_PC.value
-    longest_title = title_lengths[_table]
-    rofi_string = form_pc_string(rofi_string, games[_table], longest_title)
+    longest_title = _longest_title(title_lengths[_table], _MIN_LENGTH)
+    rofi_string = form_pc_string(rofi_string, games[_table], longest_title-_GAME_LENGTH_ADDON)
   elif(category == Categories.TOP_PS.value):
     _table = DB_Tables.TOP_PS.value
-    longest_title = title_lengths[_table]
-    rofi_string = form_ps_string(rofi_string, games[_table], longest_title)
+    longest_title = _longest_title(title_lengths[_table], _MIN_LENGTH)
+    rofi_string = form_ps_string(rofi_string, games[_table], longest_title-_GAME_LENGTH_ADDON)
   elif(category == Categories.PC_WISHLIST.value or category == WishlistOptions.PC.value):
     _table = DB_Tables.PC_WISHLIST.value
-    longest_title = title_lengths[_table]
-    rofi_string = form_pc_string(rofi_string, games[_table], longest_title)
+    longest_title = _longest_title(title_lengths[_table], _MIN_LENGTH)
+    rofi_string = form_pc_string(rofi_string, games[_table], longest_title-_GAME_LENGTH_ADDON)
   elif(category == Categories.PS_WISHLIST.value or category == WishlistOptions.PS.value):
     _table = DB_Tables.PS_WISHLIST.value
-    longest_title = title_lengths[_table]
-    rofi_string = form_ps_string(rofi_string, games[_table], longest_title)
+    longest_title = _longest_title(title_lengths[_table], _MIN_LENGTH)
+    rofi_string = form_ps_string(rofi_string, games[_table], longest_title-_GAME_LENGTH_ADDON)
   else: return None, None
   chosen_game = subprocess.run(["rofi", "-dmenu", "-p", "", "-lines", "12", "-columns", "2", "-width", f"{(longest_title+_GAME_LENGTH_ADDON)}"], stdout=subprocess.PIPE, input=str.encode(rofi_string, encoding="UTF-8"))
   if(chosen_game.returncode == 0): chosen_game = chosen_game.stdout.decode("UTF-8").split("$")[0].rstrip()
@@ -149,8 +150,12 @@ def form_ps_string(rofi_string, games, longest_title):
     rofi_string+="\n"
   return rofi_string
 
+def _longest_title(longest_title, min_width):
+  if(longest_title < min_width): return min_width
+  return longest_title
+
 ''' Stretch the game title so that each game takes equal space '''
-def stretch_string(string, length=None):
+def stretch_string(string, length):
   # if(len(string) >= length):
   #   difference = len(string) - length
     # string = string[:-difference-3] + "..." # don't do this, it changes the title so it won't match on lookup
