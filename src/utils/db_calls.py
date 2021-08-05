@@ -95,6 +95,19 @@ class DB_Calls:
         return games
 
   @staticmethod
+  def add_pc_games(cur, table, ids):
+    time = datetime.now()
+    id_string = ""
+    for index, id in enumerate(ids):
+      if(PC.is_valid(id) and not cur.execute(f"""SELECT url FROM {table} WHERE gid=?""", (id, )).fetchone()):
+        if(not index == len(ids)-1): id_string += f"{id},"
+        else: id_string += f"{id}"
+    games = PC.get_wishlist_games(id_string)
+    if(games):
+      for game in games:
+        cur.execute(f"""INSERT INTO {table} VALUES(?, ?, ?, ?, ?, ?, ?, ?)""", (game['title'], game['full_price'], game['sale_price'], game['cover_image'], game['url'], game['gid'], time, len(game['title'])))
+
+  @staticmethod
   def add_ps_games(cur, table, urls):
     time = datetime.now()
     games = []
@@ -109,16 +122,6 @@ class DB_Calls:
     game = PS.get_and_parse(url, PS._parse_your_deals)
     cur.execute(f"""INSERT INTO {table} VALUES(?, ?, ?, ?, ?, ?, ?, ?)""", (game['title'], game['full_price'], game['sale_price'], game['cover_image'], game['url'], game['gid'], time, len(game['title'])))
     return game
-
-  # @staticmethod
-  # def add_wishlist_games(cur, table, cls, games):
-  #   for game in games:
-  #     if(cls.is_valid(game)):
-  #       DB_Calls.add_wishlist_game(cur, table, game)
-
-  # @staticmethod
-  # def add_wishlist_game(cur, table, game):
-  #   url = cur.execute(f"""SELECT url FROM {table} WHERE TITLE=?""", (title, )).fetchone()
 
   ''' Fetch a game's url given the title and table of the game '''
   @staticmethod

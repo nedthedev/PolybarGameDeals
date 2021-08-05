@@ -39,10 +39,6 @@ class PS:
       tmp = PS.get_and_parse(f"{PS._TOP_DEALS_URL}{_page+1}", PS._parse_top_deals)
       if(tmp): parsed_data.append(tmp)
       else: return None
-    
-      ''' Sleep unless we just fetched the last page '''
-      if(not _page+1 == pages):
-        time.sleep(PS._SLEEP_DURATION)
 
     ''' Join the pages of games into one list '''
     joined_list = []
@@ -65,7 +61,7 @@ class PS:
 
   @staticmethod
   def is_valid(url):
-    return re.search(fr"^{PS._PS_DEALS_URL}/..-store/game/\d+/.*", url)
+    return re.search(fr"^{PS._PS_DEALS_URL}/..-store/game/\d+.*", url)
 
   @staticmethod
   def get_gid(url):
@@ -90,6 +86,7 @@ class PS:
   def _make_request(url):
     r = requests.get(url)
     if(r.status_code == 200):
+      time.sleep(PS._SLEEP_DURATION)
       return r
     return None
 

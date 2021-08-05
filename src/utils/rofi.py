@@ -26,7 +26,7 @@ class WishlistOptions(Enum):
   PS = Categories.PS_WISHLIST.value
 
 class WishlistGameOptions(Enum):
-  ADD_GAME = "Add Game\n" 
+  # ADD_GAME = "Add Game\n" 
   DELETE_GAME = "Delete Game\n"
 
 ''' The main rofi logic loop wrapped in a function '''
@@ -56,22 +56,22 @@ def launch_rofi(cur, games, title_lengths, browser):
                     chosen_game, table = choose_game(chosen_wishlist, games, title_lengths)
                     if(chosen_game): games = DB_Calls.delete_game_now(cur, table, chosen_game, games)
                     else: break
-                elif(wishlist_option == WishlistGameOptions.ADD_GAME.value):
-                  while(True):
-                    url = add_game_url()
-                    if(url): 
-                      if(chosen_wishlist == WishlistOptions.PC.value):
-                        if(PC.is_valid(url)):
-                          print("Adding new game")
-                        else:
-                          print("Invalid game url")
-                      elif(chosen_wishlist == WishlistOptions.PS.value):
-                        if(PS.is_valid(url)):
-                          print("Adding new game")
-                        else:
-                          print("Invalid game url")
-                      else: break
-                    else: break 
+                # elif(wishlist_option == WishlistGameOptions.ADD_GAME.value):
+                #   while(True):
+                #     url = add_game_url()
+                #     if(url): 
+                #       if(chosen_wishlist == WishlistOptions.PC.value):
+                #         if(PC.is_valid(url)):
+                #           print("Adding new game")
+                #         else:
+                #           print("Invalid game url")
+                #       elif(chosen_wishlist == WishlistOptions.PS.value):
+                #         if(PS.is_valid(url)):
+                #           print("Adding new game")
+                #         else:
+                #           print("Invalid game url")
+                #       else: break
+                #     else: break 
                 else: break
               else: break
           else: break

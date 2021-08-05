@@ -5,6 +5,7 @@
 '''
 
 import requests
+import re
 
 class PC:
   #####################
@@ -28,24 +29,24 @@ class PC:
   def get_top_deals(upper_price=None):
     if(upper_price == None): upper_price = PC._UPPER_PRICE
 
-    data = PC.__make_request(f"{PC._TOP_DEALS_URL}{upper_price}")
+    data = PC._make_request(f"{PC._TOP_DEALS_URL}{upper_price}")
     if(data):
-      data = PC.__parse_data(data)
+      data = PC._parse_data(data)
       return data
     return None
 
   @staticmethod
-  def get_your_deals(ids):
-    # data = cls.__make_request(f"{cls._YOUR_DEALS_URL}{ids}")
-    # if(data):
-    #   data = cls.__parse_data(data)
-    #   return data
+  def get_wishlist_games(id_string):
+    data = PC._make_request(f"{PC._YOUR_DEALS_URL}{id_string}")
+    if(data):
+      data = PC._parse_wishlist_deals(data)
+      return data
     return None
 
   @staticmethod
   def is_valid(id):
-    return True
-
+    return re.search(fr"^\d+$", id)
+    
 
 
   #############################
@@ -53,7 +54,7 @@ class PC:
   #############################
   ''' Makes a request for the provided url (the api) ''' 
   @staticmethod
-  def __make_request(url):
+  def _make_request(url):
     r = requests.get(url)
     if(r.status_code == 200):
       return r.json()
@@ -61,7 +62,7 @@ class PC:
 
   ''' Parse the deals '''
   @staticmethod
-  def __parse_data(data):
+  def _parse_data(data):
     parsed_data = []
     titles = []
     for game in data:
@@ -83,3 +84,24 @@ class PC:
           if((title == existing_game['title']) and (sale_price < existing_game['sale_price'])):
             existing_game.update({"sale_price": sale_price, "url": url})
     return parsed_data
+
+  @staticmethod
+  def _parse_wishlist_deals(data):
+    games = []
+    for game in data:
+      gid = int(game)
+
+      game = data[game]
+
+      info = game['info']
+      title = info['title']
+      cover_image = info['thumb']
+
+      deals = game['deals'][0]
+      full_price = float(deals['price'])
+      try: sale_price = deals['salePrice']
+      except Exception: sale_price = full_price
+      url = f"{PC._DEAL_URL}{deals['dealID']}"
+
+      games.append({"title": title, "full_price": full_price, "sale_price": sale_price, "cover_image": cover_image, "url": url, "gid": gid, "title_length": f"{len(title)}"})
+    return games
