@@ -29,6 +29,12 @@ The database will be automatically created and populated, just give it some time
 ```bash
 -b, --browser BROWSER # specify the path of the browser you wish to open links with
 ```
+```bash
+-pc, PC [PC ...] # ids of pc games to watch, find ids be searching for game at https://www.cheapshark.com/api/1.0/games?title=
+```
+```bash
+-ps, PS [PS ...] # urls of playstation games to watch, copy url of games from https://psdeals.net/
+```
 
 ## Modification
 ### Want to do something else with the data?
