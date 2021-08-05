@@ -9,6 +9,9 @@
 from datetime import datetime, timedelta
 from enum import Enum
 
+from ..platforms.pc import PC
+from ..platforms.ps import PS
+
 class Tables(Enum):
   TOP_PC = "TOP_PC"
   PC_WISHLIST = "PC_WISHLIST"
@@ -21,7 +24,9 @@ class DB_Indices(Enum):
   SALE_PRICE = 2
   COVER_IMAGE = 3
   URL = 4
-  UPDATE_TIME = 5
+  GID = 5
+  UPDATE_TIME = 6
+  TITLE_LENGTH = 7
 
 class DB_Calls:
   #####################
@@ -43,7 +48,7 @@ class DB_Calls:
     try:
       cur.execute(f"""SELECT SALE_PRICE FROM {table}""")
     except Exception:
-      cur.execute(f"""CREATE TABLE {table}(title TEXT NOT NULL UNIQUE, full_price REAL, sale_price REAL, cover_image TEXT, url TEXT NOT NULL UNIQUE, update_time TEXT, title_length INTEGER)""")
+      cur.execute(f"""CREATE TABLE {table}(title TEXT NOT NULL UNIQUE, full_price REAL, sale_price REAL, cover_image TEXT, url TEXT NOT NULL UNIQUE, gid INTEGER UNIQUE, update_time TEXT, title_length INTEGER)""")
     return cur.execute(f"""SELECT * FROM {table} ORDER BY sale_price ASC""").fetchall()
 
   ''' Add top deals to the database. Since top deals will time out and not exist
@@ -66,7 +71,7 @@ class DB_Calls:
     
     ''' Delete the games that aren't found in the api response anymore '''
     for title in unmatched_titles:
-      cur.execute(f"""DELETE FROM {table} WHERE TITLE=?""", (title, ))
+      DB_Calls.delete_game(cur, table, title)
    
     ''' Update the remainder of the games that are already present, add the
         games that are new entries to the database.
@@ -75,7 +80,48 @@ class DB_Calls:
       if(cur.execute(f"SELECT * FROM {table} WHERE TITLE=?", (game['title'], )).fetchone()):
         cur.execute(f"""UPDATE {table} SET sale_price=?, url=?, update_time=? WHERE TITLE=?""", (game['sale_price'], game['url'], datetime.now(), game['title']))
       else:
-        cur.execute(f"""INSERT INTO {table} VALUES(?, ?, ?, ?, ?, ?, ?)""", (game['title'], game['full_price'], game['sale_price'], game['cover_image'], game['url'], datetime.now(), len(game['title'])))
+        cur.execute(f"""INSERT INTO {table} VALUES(?, ?, ?, ?, ?, ?, ?, ?)""", (game['title'], game['full_price'], game['sale_price'], game['cover_image'], game['url'], game['gid'], datetime.now(), len(game['title'])))
+
+  @staticmethod
+  def delete_game(cur, table, title):
+    cur.execute(f"""DELETE FROM {table} WHERE TITLE=?""", (title, ))
+
+  @staticmethod
+  def delete_game_now(cur, table, title, games):
+    for index, game in enumerate(games[table]):
+      if(game[DB_Indices.TITLE.value] == title):
+        del games[table][index]
+        cur.execute(f"""DELETE FROM {table} WHERE TITLE=?""", (title, ))
+        return games
+
+  @staticmethod
+  def add_pc_games(cur, table, ids):
+    time = datetime.now()
+    id_string = ""
+    for index, id in enumerate(ids):
+      if(PC.is_valid(id) and not cur.execute(f"""SELECT url FROM {table} WHERE gid=?""", (id, )).fetchone()):
+        if(not index == len(ids)-1): id_string += f"{id},"
+        else: id_string += f"{id}"
+    games = PC.get_wishlist_games(id_string)
+    if(games):
+      for game in games:
+        cur.execute(f"""INSERT INTO {table} VALUES(?, ?, ?, ?, ?, ?, ?, ?)""", (game['title'], game['full_price'], game['sale_price'], game['cover_image'], game['url'], game['gid'], time, len(game['title'])))
+
+  @staticmethod
+  def add_ps_games(cur, table, urls):
+    time = datetime.now()
+    games = []
+    for url in urls:
+      gid = PS.get_gid(url)
+      if(PS.is_valid(url) and not cur.execute(f"""SELECT url FROM {table} WHERE URL=? OR GID=?""", (url, gid)).fetchone()):
+        games.append(DB_Calls.add_ps_game(cur, table, url, time))
+    return games
+      
+  @staticmethod 
+  def add_ps_game(cur, table, url, time):
+    game = PS.get_and_parse(url, PS._parse_your_deals)
+    cur.execute(f"""INSERT INTO {table} VALUES(?, ?, ?, ?, ?, ?, ?, ?)""", (game['title'], game['full_price'], game['sale_price'], game['cover_image'], game['url'], game['gid'], time, len(game['title'])))
+    return game
 
   ''' Fetch a game's url given the title and table of the game '''
   @staticmethod
@@ -87,18 +133,21 @@ class DB_Calls:
   ''' Simple function to get the longest title from the given table '''
   @staticmethod
   def get_longest_title(cur, table):
-    return cur.execute(f"""SELECT title_length FROM {table} ORDER BY title_length DESC""").fetchone()[0]
+    length = cur.execute(f"""SELECT title_length FROM {table} ORDER BY title_length DESC""").fetchone()
+    if(length): 
+      if(length[0] > 40): return length[0]
+    return 40
 
   ''' Determine if the top deals need to be updated based on update_delay. The 
       function first checks to see if an entry even exists, if one does then it
       will check the elapsed time.
   '''
-  @classmethod
-  def needs_updating(cls, cur, table, update_delay=None):
-    try: past_time = cls.__str_to_dt(cur.execute(f"""SELECT update_time FROM {table}""").fetchone()[0])
+  @staticmethod
+  def needs_updating(cur, table, update_delay=None):
+    try: past_time = DB_Calls.__str_to_dt(cur.execute(f"""SELECT update_time FROM {table}""").fetchone()[0])
     except: return True
     if(not update_delay):
-      update_delay = cls._UPDATE_DELAY
+      update_delay = DB_Calls._UPDATE_DELAY
     return ((datetime.now() - past_time) > update_delay)
 
 
