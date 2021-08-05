@@ -91,10 +91,10 @@ def choose_option(Options):
 
 ''' Rofi window to select the game you want to see more about '''
 def choose_game(category, games, title_lengths):
-  # _GO_UP = "..\n"
+  _GO_UP = ""
   _GAME_LENGTH_ADDON = 4
 
-  rofi_string = ""
+  rofi_string = _GO_UP
   longest_title = 0
   if(category == Categories.TOP_PC.value):
     _table = DB_Tables.TOP_PC.value
@@ -118,8 +118,6 @@ def choose_game(category, games, title_lengths):
   else: chosen_game = None
   return chosen_game, _table
 
-# def url_prompt(table, )
-
 ''' Rofi window confirming whether or not you want to open the link '''
 def confirmed(prompt):
   yes = "Yes\n"
@@ -134,13 +132,16 @@ def add_game_url():
   if(choice.returncode > 0): return None
   else: return choice.stdout.decode("UTF-8")
 
+''' Simple function to open url '''
 def open_url(browser, url):
   subprocess.run([browser, url])
 
+''' Format the PC game deals into nice format for rendering with rofi '''
 def form_pc_string(rofi_string, games, longest_title):
   for game in games: rofi_string+=(f"{stretch_string(game[DB_Indices.TITLE.value], longest_title)} ${game[DB_Indices.SALE_PRICE.value]:.2f}\n")
   return rofi_string
 
+''' Format the PS game deals into nice format for rendering with rofi '''
 def form_ps_string(rofi_string, games, longest_title):
   for game in games:
     if(game[DB_Indices.SALE_PRICE.value] == PS.ps_plus_price()): rofi_string+=(f"{stretch_string(game[DB_Indices.TITLE.value], longest_title)} $PS+")
@@ -148,6 +149,7 @@ def form_ps_string(rofi_string, games, longest_title):
     rofi_string+="\n"
   return rofi_string
 
+''' Stretch the game title so that each game takes equal space '''
 def stretch_string(string, length=None):
   # if(len(string) >= length):
   #   difference = len(string) - length

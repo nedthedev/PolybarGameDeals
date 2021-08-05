@@ -66,7 +66,8 @@ class PS:
 
   @staticmethod
   def get_gid(url):
-    return url.split("game/")[1].split("/")[0]
+    try: return url.split("game/")[1].split("/")[0]
+    except Exception: return ""
 
   @staticmethod
   def get_and_parse(url, parser):

@@ -46,7 +46,7 @@ class DB_Calls:
     for existing_game in existing_games:
       matched = False
       for new_game in new_games:
-        if(existing_game[DB_Indices.TITLE.value] == new_game['title']):
+        if(existing_game[DB_Indices.TITLE.value] == new_game[DB_Columns.TITLE.value]):
           matched = True
           break
       if(not matched):
@@ -55,7 +55,7 @@ class DB_Calls:
     
     ''' Delete the games that aren't found in the api response anymore '''
     for title in unmatched_titles:
-      DB_Calls.delete_game(cur, table, title)
+      DB_Calls.delete_game_with_title(cur, table, title)
    
     ''' Update the remainder of the games that are already present, add the
         games that are new entries to the database.
@@ -64,12 +64,25 @@ class DB_Calls:
       if(cur.execute(f"SELECT * FROM {table} WHERE TITLE=?", (game[DB_Columns.TITLE.value], )).fetchone()):
         cur.execute(f"""UPDATE {table} SET sale_price=?, url=?, update_time=? WHERE TITLE=?""", (game[DB_Columns.SALE_PRICE.value], game[DB_Columns.URL.value], datetime.now(), game[DB_Columns.TITLE.value]))
       else:
-        cur.execute(f"""INSERT INTO {table} VALUES(?, ?, ?, ?, ?, ?, ?, ?)""", (game[DB_Columns.TITLE.value], game[DB_Columns.FULL_PRICE.value], game[DB_Columns.SALE_PRICE.value], game[DB_Columns.COVER_IMAGE.value], game[DB_Columns.URL.value], game[DB_Columns.GID.value], datetime.now(), len(game['title'])))
+        cur.execute(f"""INSERT INTO {table} VALUES(?, ?, ?, ?, ?, ?, ?, ?)""", (game[DB_Columns.TITLE.value], game[DB_Columns.FULL_PRICE.value], game[DB_Columns.SALE_PRICE.value], game[DB_Columns.COVER_IMAGE.value], game[DB_Columns.URL.value], game[DB_Columns.GID.value], datetime.now(), len(game[DB_Columns.TITLE.value])))
 
   @staticmethod
-  def delete_game(cur, table, title):
+  def game_exists(cur, table, cls, id):
+    if(cls.is_valid(id)):
+      if(cur.execute(f"""SELECT * FROM {table} WHERE gid=? OR url=?""", (id, id)).fetchone()): return True
+    return False
+
+  ''' Delete game with given title from the database '''
+  @staticmethod
+  def delete_game_with_title(cur, table, title):
     cur.execute(f"""DELETE FROM {table} WHERE TITLE=?""", (title, ))
 
+  @staticmethod
+  def delete_game_with_id(cur, table, id):
+    cur.execute(f"""DELETE FROM {table} WHERE gid=?""", (id, ))
+
+  ''' Delete game with given title from the database and the list of games
+      This function is used exclusively to delete games through the rofi prompt '''
   @staticmethod
   def delete_game_now(cur, table, title, games):
     for index, game in enumerate(games[table]):
@@ -78,6 +91,7 @@ class DB_Calls:
         cur.execute(f"""DELETE FROM {table} WHERE TITLE=?""", (title, ))
         return games
 
+  ''' Called when wanting to add new wishlist PC games '''
   @staticmethod
   def add_pc_games(cur, table, ids):
     time = datetime.now()
@@ -85,18 +99,22 @@ class DB_Calls:
     update_ids = []
     for index, id in enumerate(ids):
       if(PC.is_valid(id)):
+        ''' Form the valid string of ids for fetching data from api with one request '''
         if(not index == len(ids)-1): id_string += f"{id},"
         else: id_string += f"{id}"
-        if(cur.execute(f"""SELECT url FROM {table} WHERE gid=?""", (id, )).fetchone()):
+        ''' If it is in the database then we will update, not insert '''
+        if(cur.execute(f"""SELECT update_time FROM {table} WHERE gid=?""", (id, )).fetchone()):
           update_ids.append(id)
     games = PC.get_wishlist_games(id_string)
     if(games):
       for game in games:
+        ''' If it is a game that we needed to update '''
         if(game[DB_Columns.GID.value] in update_ids):
           cur.execute(f"""UPDATE {table} SET full_price=?, sale_price=?, url=?, update_time=? WHERE gid=?""", (game[DB_Columns.FULL_PRICE.value], game[DB_Columns.SALE_PRICE.value], game[DB_Columns.URL.value], time, game[DB_Columns.GID.value]))
         else:
-          cur.execute(f"""INSERT INTO {table} VALUES(?, ?, ?, ?, ?, ?, ?, ?)""", (game[DB_Columns.TITLE.value], game[DB_Columns.FULL_PRICE.value], game[DB_Columns.SALE_PRICE.value], game[DB_Columns.COVER_IMAGE.value], game[DB_Columns.URL.value], game[DB_Columns.GID.value], time, len(game['title'])))
+          cur.execute(f"""INSERT INTO {table} VALUES(?, ?, ?, ?, ?, ?, ?, ?)""", (game[DB_Columns.TITLE.value], game[DB_Columns.FULL_PRICE.value], game[DB_Columns.SALE_PRICE.value], game[DB_Columns.COVER_IMAGE.value], game[DB_Columns.URL.value], game[DB_Columns.GID.value], time, len(game[DB_Columns.TITLE.value])))
 
+  ''' Called when wanting to add new wishlist Playstation games '''
   @staticmethod
   def add_ps_games(cur, table, urls):
     time = datetime.now()
@@ -105,14 +123,17 @@ class DB_Calls:
     for url in urls:
       gid = PS.get_gid(url)
       if(PS.is_valid(url)):
+        ''' If the game already exists in the database then we need only update '''
         if(cur.execute(f"""SELECT url, update_time FROM {table} WHERE URL=? OR GID=?""", (url, gid)).fetchone()):
           existing_games.append(gid)
+        ''' We must fetch the data for every game, because every game provided needs updating '''
         games.append(PS.get_and_parse(url, PS._parse_your_deals))
     for game in games:
+      ''' If it is a game that we needed to update '''
       if(game[DB_Columns.GID.value] in existing_games):
         cur.execute(f"""UPDATE {table} SET full_price=?, sale_price=?, update_time=? WHERE GID=?""", (game[DB_Columns.FULL_PRICE.value], game[DB_Columns.SALE_PRICE.value], time, game[DB_Columns.GID.value]))
       else:
-        cur.execute(f"""INSERT INTO {table} VALUES(?, ?, ?, ?, ?, ?, ?, ?)""", (game[DB_Columns.TITLE.value], game[DB_Columns.FULL_PRICE.value], game[DB_Columns.SALE_PRICE.value], game[DB_Columns.COVER_IMAGE.value], game[DB_Columns.URL.value], game[DB_Columns.GID.value], time, len(game['title'])))
+        cur.execute(f"""INSERT INTO {table} VALUES(?, ?, ?, ?, ?, ?, ?, ?)""", (game[DB_Columns.TITLE.value], game[DB_Columns.FULL_PRICE.value], game[DB_Columns.SALE_PRICE.value], game[DB_Columns.COVER_IMAGE.value], game[DB_Columns.URL.value], game[DB_Columns.GID.value], time, len(game[DB_Columns.TITLE.value])))
     return games
       
   ''' Fetch a game's url given the title and table of the game '''
@@ -132,8 +153,7 @@ class DB_Calls:
 
   ''' Determine if the top deals need to be updated based on update_delay. The 
       function first checks to see if an entry even exists, if one does then it
-      will check the elapsed time.
-  '''
+      will check the elapsed time. '''
   @staticmethod
   def needs_updating(cur, table, update_delay=None):
     try: past_time = DB_Calls.__str_to_dt(cur.execute(f"""SELECT update_time FROM {table}""").fetchone()[0])
@@ -142,6 +162,7 @@ class DB_Calls:
       update_delay = DB_Calls._UPDATE_DELAY
     return ((datetime.now() - past_time) > update_delay)
 
+  ''' Checks and finds all PC wishlist games that need updating '''
   @staticmethod
   def pc_wishlist_needs_updating(cur, table, update_delay=None):
     if(not update_delay):
@@ -156,6 +177,7 @@ class DB_Calls:
     except Exception:
       return []
 
+  ''' Checks and finds all Playstation wishlist games that need updating '''
   @staticmethod
   def ps_wishlist_needs_updating(cur, table, update_delay=None):
     if(not update_delay):
@@ -175,6 +197,7 @@ class DB_Calls:
   #############################
   '''   "PRIVATE" METHODS   '''
   #############################
+  ''' Convert a date string into a valid datetime object '''
   @staticmethod
   def __str_to_dt(date_str):
     return datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S.%f")

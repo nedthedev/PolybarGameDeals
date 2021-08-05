@@ -2,12 +2,14 @@
 
 from enum import Enum
 
+''' An enum for better accessing DB tables '''
 class DB_Tables(Enum):
   TOP_PC = "TOP_PC"
   PC_WISHLIST = "PC_WISHLIST"
   TOP_PS = "TOP_PS"
   PS_WISHLIST = "PS_WISHLIST"
   
+''' An enum for better accessing game data'''
 class DB_Indices(Enum):
   TITLE = 0
   FULL_PRICE = 1
@@ -18,6 +20,7 @@ class DB_Indices(Enum):
   UPDATE_TIME = 6
   TITLE_LENGTH = 7
 
+''' An enum for better accessing game data '''
 class DB_Columns(Enum):
   TITLE = "title"
   FULL_PRICE = "full_price"
