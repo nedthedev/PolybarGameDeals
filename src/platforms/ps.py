@@ -4,7 +4,6 @@
   This script is for fetching and parsing the Playstation deals, deals from psdeals.net
 '''
 
-from sqlite3.dbapi2 import converters
 import requests
 import time
 import re
