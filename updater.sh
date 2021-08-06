@@ -1,4 +1,4 @@
 #!/usr/bin/sh
 
-./main.py -s
+echo "$(pwd)/main.py -s"
 echo ""
