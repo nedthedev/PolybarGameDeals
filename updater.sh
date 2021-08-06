@@ -1,4 +1,5 @@
 #!/usr/bin/sh
 
-echo "$(pwd)/main.py -s"
+_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+$($_dir/main.py -s)
 echo ""
