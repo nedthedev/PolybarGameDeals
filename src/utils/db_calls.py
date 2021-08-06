@@ -128,12 +128,13 @@ class DB_Calls:
           existing_games.append(gid)
         ''' We must fetch the data for every game, because every game provided needs updating '''
         games.append(PS.get_and_parse(url, PS._parse_your_deals))
-    for game in games:
-      ''' If it is a game that we needed to update '''
-      if(game[DB_Columns.GID.value] in existing_games):
-        cur.execute(f"""UPDATE {table} SET full_price=?, sale_price=?, update_time=? WHERE GID=?""", (game[DB_Columns.FULL_PRICE.value], game[DB_Columns.SALE_PRICE.value], time, game[DB_Columns.GID.value]))
-      else:
-        cur.execute(f"""INSERT INTO {table} VALUES(?, ?, ?, ?, ?, ?, ?, ?)""", (game[DB_Columns.TITLE.value], game[DB_Columns.FULL_PRICE.value], game[DB_Columns.SALE_PRICE.value], game[DB_Columns.COVER_IMAGE.value], game[DB_Columns.URL.value], game[DB_Columns.GID.value], time, len(game[DB_Columns.TITLE.value])))
+    if(games):
+      for game in games:
+        ''' If it is a game that we needed to update '''
+        if(game[DB_Columns.GID.value] in existing_games):
+          cur.execute(f"""UPDATE {table} SET full_price=?, sale_price=?, update_time=? WHERE GID=?""", (game[DB_Columns.FULL_PRICE.value], game[DB_Columns.SALE_PRICE.value], time, game[DB_Columns.GID.value]))
+        else:
+          cur.execute(f"""INSERT INTO {table} VALUES(?, ?, ?, ?, ?, ?, ?, ?)""", (game[DB_Columns.TITLE.value], game[DB_Columns.FULL_PRICE.value], game[DB_Columns.SALE_PRICE.value], game[DB_Columns.COVER_IMAGE.value], game[DB_Columns.URL.value], game[DB_Columns.GID.value], time, len(game[DB_Columns.TITLE.value])))
     return games
       
   ''' Fetch a game's url given the title and table of the game '''
