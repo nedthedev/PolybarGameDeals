@@ -92,8 +92,7 @@ def choose_option(Options):
 ''' Rofi window to select the game you want to see more about '''
 def choose_game(category, games, title_lengths):
   _GO_UP = ""
-  _PS_ADDON = 3
-  _PC_ADDON = 4
+  _ADDON = 18
   _MIN_LENGTH = 0
 
   rofi_string = _GO_UP
@@ -102,24 +101,20 @@ def choose_game(category, games, title_lengths):
     _table = DB_Tables.TOP_PC.value
     longest_title = _longest_title(title_lengths[_table], _MIN_LENGTH)
     rofi_string = form_pc_string(rofi_string, games[_table], longest_title)
-    addon = _PC_ADDON
   elif(category == Categories.TOP_PS.value):
     _table = DB_Tables.TOP_PS.value
     longest_title = _longest_title(title_lengths[_table], _MIN_LENGTH)
-    rofi_string = form_ps_string(rofi_string, games[_table], longest_title+1)
-    addon = _PS_ADDON
+    rofi_string = form_ps_string(rofi_string, games[_table], longest_title)
   elif(category == Categories.PC_WISHLIST.value or category == WishlistOptions.PC.value):
     _table = DB_Tables.PC_WISHLIST.value
     longest_title = _longest_title(title_lengths[_table], _MIN_LENGTH)
     rofi_string = form_pc_string(rofi_string, games[_table], longest_title)
-    addon = _PC_ADDON
   elif(category == Categories.PS_WISHLIST.value or category == WishlistOptions.PS.value):
     _table = DB_Tables.PS_WISHLIST.value
     longest_title = _longest_title(title_lengths[_table], _MIN_LENGTH)
-    addon = _PS_ADDON
-    rofi_string = form_ps_string(rofi_string, games[_table], longest_title+1)
+    rofi_string = form_ps_string(rofi_string, games[_table], longest_title)
   else: return None, None
-  chosen_game = subprocess.run(["rofi", "-dmenu", "-p", "", "-lines", "12", "-columns", "2", "-width", f"{(longest_title+addon)}"], stdout=subprocess.PIPE, input=str.encode(rofi_string, encoding="UTF-8"))
+  chosen_game = subprocess.run(["rofi", "-dmenu", "-p", "", "-lines", "12", "-columns", "2", "-width", f"-{longest_title*2+_ADDON}"], stdout=subprocess.PIPE, input=str.encode(rofi_string, encoding="UTF-8"))
   if(chosen_game.returncode == 0): chosen_game = chosen_game.stdout.decode("UTF-8").split("$")[0].rstrip()
   else: chosen_game = None
   return chosen_game, _table

@@ -140,3 +140,4 @@ cython_debug/
 games.db
 tests.py
 test.db
+updater.sh
