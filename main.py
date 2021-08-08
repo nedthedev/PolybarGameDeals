@@ -36,7 +36,9 @@ PC_UPPER_PRICE = 10
 def check_args():
   parser = argparse.ArgumentParser()
   ''''''
-  parser.add_argument("-s", "--silent", help="pass this argument if you want it to run in the background, no rofi window will open", action="store_true")
+  parser.add_argument("-r", "--rofi", help="run rofi window exclusively, do not check for updates, just open the rofi window", action="store_true")
+  ''''''
+  parser.add_argument("-s", "--silent", help="update games if necessary, pass this argument if you don't want a rofi window to open", action="store_true")
   ''''''
   parser.add_argument("-b", "--browser", help="specify the path of the browser you want to open links with", default="/usr/bin/firefox")
   ''''''
@@ -46,14 +48,23 @@ def check_args():
   ''''''
   return parser.parse_args()
 
-''' Returns all the games in the database from the given table and calls methods from cls '''
-def get_top_games(cur, table, download_games_function, update_delay=None, upper_price=None, ids=None):
+''' A generic function for updating wishlist games '''
+def update_wishlist_games(cur, table, find_outdated_games_function, update_function, wishlist_args):
+  ''' Figure out which wishlist games need updating '''
+  outdated_games = find_outdated_games_function(cur, table)
+
+  ''' Fetch deals for new and existing wishlist games  '''
+  if(wishlist_args or outdated_games):
+    outdated_games += wishlist_args
+    update_function(cur, table, outdated_games)
+
+''' A generic function for updating top game deals '''
+def update_top_games(cur, table, download_games_function, update_delay=None, upper_price=None):
   if(DB_Calls.needs_updating(cur, table, update_delay)):
     old_top = DB_Calls.get_data(cur, table)
     new_top = download_games_function(upper_price)
     if(new_top):
       DB_Calls.add_top_deals(cur, table, old_top, new_top)
-  return DB_Calls.get_data(cur, table)
 
 
 
@@ -77,34 +88,31 @@ if __name__ == "__main__":
     for index, id in enumerate(args.pc):
       if(DB_Calls.game_exists(cur, DB_Tables.PC_WISHLIST.value, PC, id)):
         del args.pc[index]
+  else: args.pc = []
   if(args.ps):
     for index, url in enumerate(args.ps):
       if(DB_Calls.game_exists(cur, DB_Tables.PS_WISHLIST.value, PS, url)):
         del args.ps[index]
+  else: args.ps = []
   
-  ''' Update / gather the top games '''
-  top_pc_games = get_top_games(cur, DB_Tables.TOP_PC.value, PC.get_top_deals, CUSTOM_UPDATE_DELAY, PC_UPPER_PRICE)
-  top_ps_games = get_top_games(cur, DB_Tables.TOP_PS.value, PS.get_top_deals, CUSTOM_UPDATE_DELAY)
+  ''' If we did not pass the -r option then check for updates '''
+  if(not args.rofi):
+    ''' update the top games '''
+    update_top_games(cur, DB_Tables.TOP_PC.value, PC.get_top_deals, CUSTOM_UPDATE_DELAY, PC_UPPER_PRICE)
+    update_top_games(cur, DB_Tables.TOP_PS.value, PS.get_top_deals, CUSTOM_UPDATE_DELAY)
+    ''' update wishlist games '''
+    update_wishlist_games(cur, DB_Tables.PC_WISHLIST.value, DB_Calls.pc_wishlist_needs_updating, DB_Calls.add_pc_games, args.pc)
+    update_wishlist_games(cur, DB_Tables.PS_WISHLIST.value, DB_Calls.ps_wishlist_needs_updating, DB_Calls.add_ps_games, args.ps)
+
+  ''' Get games from the database '''
   pc_wishlist_games = DB_Calls.get_data(cur, DB_Tables.PC_WISHLIST.value)
   ps_wishlist_games = DB_Calls.get_data(cur, DB_Tables.PS_WISHLIST.value)
-
-  ''' Get wishlist games to update '''
-  pc_to_update = DB_Calls.pc_wishlist_needs_updating(cur, DB_Tables.PC_WISHLIST.value)
-  ps_to_update = DB_Calls.ps_wishlist_needs_updating(cur, DB_Tables.PS_WISHLIST.value)
-
-  ''' Add wishlist games, update existing ones '''
-  if(args.pc or pc_to_update):
-    if(args.pc): pc_to_update += args.pc
-    DB_Calls.add_pc_games(cur, DB_Tables.PC_WISHLIST.value, pc_to_update)
-    pc_wishlist_games = DB_Calls.get_data(cur, DB_Tables.PC_WISHLIST.value)
-  if(args.ps or ps_to_update):
-    if(args.ps): ps_to_update += args.ps
-    DB_Calls.add_ps_games(cur, DB_Tables.PS_WISHLIST.value, ps_to_update)
-    ps_wishlist_games = DB_Calls.get_data(cur, DB_Tables.PS_WISHLIST.value)
+  top_pc_games = DB_Calls.get_data(cur, DB_Tables.TOP_PC.value)
+  top_ps_games = DB_Calls.get_data(cur, DB_Tables.TOP_PS.value)
 
   ''' Totally unnecessary but it looks nice to have rofi titles equal  ''' 
-  longest_pc_title = DB_Calls.get_longest_title(cur, DB_Tables.TOP_PC.value)
-  longest_ps_title = DB_Calls.get_longest_title(cur, DB_Tables.TOP_PS.value)
+  longest_top_pc_title = DB_Calls.get_longest_title(cur, DB_Tables.TOP_PC.value)
+  longest_top_ps_title = DB_Calls.get_longest_title(cur, DB_Tables.TOP_PS.value)
   longest_pc_wishlist_title = DB_Calls.get_longest_title(cur, DB_Tables.PC_WISHLIST.value)
   longest_ps_wishlist_title = DB_Calls.get_longest_title(cur, DB_Tables.PS_WISHLIST.value)
 
@@ -116,14 +124,14 @@ if __name__ == "__main__":
     DB_Tables.PS_WISHLIST.value: ps_wishlist_games
   }
   title_lengths = {
-    DB_Tables.TOP_PC.value: longest_pc_title, 
-    DB_Tables.TOP_PS.value: longest_ps_title, 
+    DB_Tables.TOP_PC.value: longest_top_pc_title, 
+    DB_Tables.TOP_PS.value: longest_top_ps_title, 
     DB_Tables.PC_WISHLIST.value: longest_pc_wishlist_title, 
     DB_Tables.PS_WISHLIST.value: longest_ps_wishlist_title
   } 
 
   ''' Rofi window logic loop '''
-  if(not args.silent):
+  if(args.rofi or not args.silent):
     if(os.path.exists(args.browser)): launch_rofi(cur, games, title_lengths, args.browser)
     else: print(f"No file at {args.browser}...")
   

@@ -17,7 +17,7 @@ class DB_Calls:
   '''   VARIABLES   '''
   #####################
   ''' The default delay before updating the top deals '''
-  _UPDATE_DELAY = timedelta(seconds=0, minutes=0, hours=3, days=0)
+  _UPDATE_DELAY = timedelta(seconds=0, minutes=0, hours=1, days=0)
 
 
 

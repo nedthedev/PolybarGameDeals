@@ -24,7 +24,10 @@ python3 main.py
 The database will be automatically created and populated, just give it some time to fetch the data.
 ## Arguments
 ```bash
--s, --silent # run the script in the background, no rofi window will open
+-r, --rofi # only open a rofi window, do not check for updates
+```
+```bash
+-s, --silent # only check for updates, do not open a rofi window
 ```
 ```bash
 -b, --browser BROWSER # specify the path of the browser you wish to open links with
