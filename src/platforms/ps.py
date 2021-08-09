@@ -4,12 +4,11 @@
   This script is for fetching and parsing the Playstation deals, deals from psdeals.net
 '''
 
-import requests
 import time
 import re
 from bs4 import BeautifulSoup
 
-from .shared import create_game_dictionary
+from .shared import create_game_dictionary, make_request_
 
 class PS:
   #####################
@@ -36,9 +35,17 @@ class PS:
     if(pages == None): pages = PS._TOP_DEALS_PAGES
     
     parsed_data = []
-    for _page in range(pages):
-      tmp = PS.get_and_parse(f"{PS._TOP_DEALS_URL}{_page+1}", PS._parse_top_deals)
-      if(tmp): parsed_data.append(tmp)
+    for _page in range(1, pages+1):
+      if(_page == PS._TOP_DEALS_PAGES): sleep = False
+      else: sleep = True
+
+      ''' Make the request to download the pages '''
+      data = PS._make_request(f"{PS._TOP_DEALS_URL}{_page}", sleep)
+      
+      ''' if data was retrieved then parse it, otherwise return none.
+          This is questionable, but I think it best to update all the data 
+          at the same time... '''
+      if(data): parsed_data.append(PS._parse_top_deals(data.text))
       else: return None
 
     ''' Join the pages of games into one list '''
@@ -47,35 +54,31 @@ class PS:
       joined_list += list_
     return joined_list
 
+  ''' Get all of your top deals '''
+  @staticmethod
+  def get_your_deals(url, sleep=True):
+    ''' Make the request to download the pages '''
+    game = PS._make_request(url, sleep)
+
+    ''' if data was retrieved then parse it, otherwise return none '''
+    if(game): return PS._parse_your_deals(game.text, url)
+    else: return None
+
   ''' A utility method to return the class variable _PS_PLUS_PRICE '''
   @staticmethod
   def ps_plus_price():
     return float(PS._PS_PLUS_PRICE)
 
-  @staticmethod
-  def get_your_deals(urls=None):
-    data = []
-    for url in urls:
-      game = PS.get_and_parse(url, PS._parse_your_deals)
-      data.append(game)
-
+  ''' Check the the url matches the proper url regex '''
   @staticmethod
   def is_valid(url):
     return re.search(fr"^{PS._PS_DEALS_URL}/..-store/game/\d+.*", url)
 
+  ''' Split the gid out of the url '''
   @staticmethod
   def get_gid(url):
     try: return url.split("game/")[1].split("/")[0]
     except Exception: return ""
-
-  @staticmethod
-  def get_and_parse(url, parser):
-    ''' Make the request to download the pages '''
-    data = PS._make_request(url)
-    
-    ''' if data was retrieved then parse it, otherwise return none '''
-    if(data): return parser(data.text, url)
-    else: return None
 
 
 
@@ -84,16 +87,15 @@ class PS:
   #############################
   ''' Makes a request for the provided url '''
   @staticmethod
-  def _make_request(url):
-    r = requests.get(url)
-    if(r.status_code == 200):
+  def _make_request(url, sleep=True):
+    r = make_request_(url)
+    if(r and sleep):
       time.sleep(PS._SLEEP_DURATION)
-      return r
-    return None
+    return r
 
   ''' The deal page scraper and data parser '''
   @staticmethod
-  def _parse_top_deals(data, _):
+  def _parse_top_deals(data):
     html = BeautifulSoup(data, "html.parser")
     games = html.find_all("div", {"class": ["game-collection-item-col"]})
     parsed_data = []
@@ -112,8 +114,7 @@ class PS:
       else: sale_price = PS._PS_PLUS_PRICE
 
       ''' There are many different indicators of time left for the deal, so I
-          must handle whether or not it's days, hours, or doesn't exist 
-      '''
+          must handle whether or not it's days, hours, or doesn't exist '''
       days_remaining = game.find("p", {"class": ["game-collection-item-end-date"]})
       if(days_remaining): 
         try:
@@ -139,6 +140,8 @@ class PS:
       parsed_data.append(create_game_dictionary(title, full_price, sale_price, cover_image, psdeals_gid, ps_deals_url))
     return parsed_data
 
+  ''' Individual game pages have different html than top pages, so we must scrape these
+      differently '''
   @staticmethod
   def _parse_your_deals(data, url):
     html = BeautifulSoup(data, "html.parser")

@@ -9,7 +9,7 @@ import re
 from enum import Enum
 
 from ..utils.db_enums import DB_Columns
-from .shared import create_game_dictionary
+from .shared import create_game_dictionary, make_request_
 
 class API_Indices(Enum):
   TITLE = "title"
@@ -68,8 +68,8 @@ class PC:
   ''' Makes a request for the provided url (the api) ''' 
   @staticmethod
   def _make_request(url):
-    r = requests.get(url)
-    if(r.status_code == 200):
+    r = make_request_(url)
+    if(r):
       return r.json()
     return None
 

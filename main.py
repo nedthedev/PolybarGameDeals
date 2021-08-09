@@ -11,7 +11,6 @@
     All Playstation deals are scraped from https://psdeals.net/. When you select a Playstation game it will take you to the game's page on the psdeals.net website.
 '''
 
-import enum
 import sqlite3
 import os
 from datetime import timedelta
@@ -29,7 +28,9 @@ from src.platforms.ps import PS
 #####################
 '''   VARIABLES   '''
 #####################
-CUSTOM_UPDATE_DELAY = None # timedelta(seconds=0, minutes=30, hours=0, days=0)
+''' The amount of time that must pass before updating the database. Default is 12 hours '''
+CUSTOM_UPDATE_DELAY = None # timedelta(seconds=0, minutes=0, hours=2, days=0)
+''' The maximum price for the PC deals you want to find '''
 PC_UPPER_PRICE = 10
 
 ''' Scan for arguments to manage the "wishlist" games '''
