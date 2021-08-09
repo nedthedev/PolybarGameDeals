@@ -10,6 +10,7 @@ import subprocess
 from .db_calls import DB_Calls
 from .db_enums import DB_Tables, DB_Indices
 from ..platforms.ps import PS
+from ..platforms.pc import PC
 
 
 
@@ -27,6 +28,7 @@ class WishlistOptions(Enum):
 
 class WishlistGameOptions(Enum):
   # ADD_GAME = "Add Game\n" 
+  SEARCH_GAME = "Search Game\n"
   DELETE_GAME = "Delete Game\n"
 
 ''' The main rofi logic loop wrapped in a function '''
@@ -55,6 +57,19 @@ def launch_rofi(cur, games, title_lengths, browser):
                   while(True):
                     chosen_game, table = choose_game(chosen_wishlist, games, title_lengths)
                     if(chosen_game): games = DB_Calls.delete_game_now(cur, table, chosen_game, games)
+                    else: break
+                elif(wishlist_option == WishlistGameOptions.SEARCH_GAME.value):
+                  while(True):
+                    game_name = get_input("Enter name of game")
+                    if(game_name):
+                      if(chosen_wishlist == WishlistOptions.PC.value):
+                        url = PC.search_url(game_name)
+                        if(confirmed(f"Open {url}")): open_url(browser, url)
+                        else: break
+                      else:
+                        url = PS.search_url(game_name)
+                        if(confirmed(f"Open {url}")): open_url(browser, url)
+                        else: break
                     else: break
                 # elif(wishlist_option == WishlistGameOptions.ADD_GAME.value):
                 #   while(True):
@@ -118,6 +133,12 @@ def choose_game(category, games, title_lengths):
   if(chosen_game.returncode == 0): chosen_game = chosen_game.stdout.decode("UTF-8").split("$")[0].rstrip()
   else: chosen_game = None
   return chosen_game, _table
+
+''' Rofi window confirming whether or not you want to open the link '''
+def get_input(prompt):
+  choice = subprocess.run(["rofi", "-dmenu", "-p", f"{prompt}", "-lines", "2", "-columns", "1"], stdout=subprocess.PIPE)
+  if(choice.returncode == 0): return choice.stdout.decode("UTF-8")
+  else: return None
 
 ''' Rofi window confirming whether or not you want to open the link '''
 def confirmed(prompt):

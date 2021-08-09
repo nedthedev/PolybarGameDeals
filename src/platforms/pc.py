@@ -56,6 +56,7 @@ class PC:
       return data
     return None
 
+  ''' Make request for the given id string '''
   @staticmethod
   def get_wishlist_games(id_string):
     data = PC._make_request(f"{PC._YOUR_DEALS_URL}{id_string}")
@@ -64,9 +65,15 @@ class PC:
       return data
     return None
 
+  ''' Check the the url matches the proper url regex '''
   @staticmethod
   def is_valid(id):
     return re.search(fr"^\d+$", str(id))
+
+  ''' Return the url to search for game '''
+  @staticmethod
+  def search_url(game_name):
+    return f"{PC._GAME_LOOKUP_URL}{game_name}"
     
 
 

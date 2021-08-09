@@ -15,11 +15,11 @@ class PS:
   '''   VARIABLES   '''
   #####################
   _TOP_DEALS_PAGES = 2  # this is the number of pages that contain deals
-  _TOP_DEALS_URL = "https://psdeals.net/us-store/collection/top_rated_sale?platforms=ps4&page="
-  _YOUR_DEALS_URL = "https://psdeals.net/us-store/game/"
+  _TOP_DEALS_URL = "https://psdeals.net/collection/top_rated_sale?platforms=ps4&page="
+  _YOUR_DEALS_URL = "https://psdeals.net/game/"
   _PS_DEALS_URL = "https://psdeals.net"
-  _PS_STORE_URL = "https://store.playstation.com/en-us/product/"
-  _GAME_LOOKUP_URL = "https://psdeals.net/us-store/search?search_query="
+  # _PS_STORE_URL = "https://store.playstation.com/en-us/product/"
+  _GAME_LOOKUP_URL = "https://psdeals.net/search?search_query="
   _SLEEP_DURATION = 5 # the number of seconds to sleep between page requests
   _PS_PLUS_PRICE = "99.99" # a default price for PS+ only deals (arbitrary)
 
@@ -79,6 +79,11 @@ class PS:
   def get_gid(url):
     try: return url.split("game/")[1].split("/")[0]
     except Exception: return ""
+
+  ''' Return the url to search for game '''
+  @staticmethod
+  def search_url(game_name):
+    return f"{PS._GAME_LOOKUP_URL}{game_name}"
 
 
 
