@@ -4,7 +4,6 @@
   This script is for fetching and parsing the PC deals, deals from cheapshark.com
 '''
 
-import requests
 import re
 from enum import Enum
 
