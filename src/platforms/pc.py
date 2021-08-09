@@ -10,13 +10,22 @@ from enum import Enum
 from ..utils.db_enums import DB_Columns
 from .shared import create_game_dictionary, make_request_
 
-class API_Indices(Enum):
+class Top_Deals_Indices(Enum):
   TITLE = "title"
   NORMAL_PRICE = "normalPrice"
   SALE_PRICE = "salePrice"
   COVER_IMAGE = "thumb"
   DEAL_ID = "dealID"
   GAME_ID = "gameID"
+
+class Your_Deals_Indices(Enum):
+  INFO = "info"
+  DEALS = "deals"
+  TITLE = "title"
+  NORMAL_PRICE = "retailPrice"
+  SALE_PRICE = "price"
+  COVER_IMAGE = "thumb"
+  DEAL_ID = "dealID"
 
 class PC:
   #####################
@@ -78,12 +87,12 @@ class PC:
     parsed_data = []
     titles = []
     for game in data:
-      title = game[API_Indices.TITLE.value]
-      full_price = float(game[API_Indices.NORMAL_PRICE.value])
-      sale_price = float(game[API_Indices.SALE_PRICE.value])
-      cover_image = game[API_Indices.COVER_IMAGE.value]
-      url = f"{PC._DEAL_URL}{game[API_Indices.DEAL_ID.value]}"
-      gid = game[API_Indices.GAME_ID.value]
+      title = game[Top_Deals_Indices.TITLE.value]
+      full_price = float(game[Top_Deals_Indices.NORMAL_PRICE.value])
+      sale_price = float(game[Top_Deals_Indices.SALE_PRICE.value])
+      cover_image = game[Top_Deals_Indices.COVER_IMAGE.value]
+      url = f"{PC._DEAL_URL}{game[Top_Deals_Indices.DEAL_ID.value]}"
+      gid = game[Top_Deals_Indices.GAME_ID.value]
 
       ''' 
       Unfortunately, or fortunately?, the api can have lots of duplicates, some with different prices, so I must do some checking to remove dupes.
@@ -93,7 +102,7 @@ class PC:
         parsed_data.append(create_game_dictionary(title, full_price, sale_price, cover_image, gid, url))
       else:   # if this title has been added, check if this one is cheaper
         for existing_game in parsed_data:
-          if((title == existing_game[API_Indices.TITLE.value]) and (sale_price < existing_game[DB_Columns.SALE_PRICE.value])):
+          if((title == existing_game[Top_Deals_Indices.TITLE.value]) and (sale_price < existing_game[DB_Columns.SALE_PRICE.value])):
             existing_game.update({DB_Columns.SALE_PRICE.value: sale_price, DB_Columns.URL.value: url})
     return parsed_data
 
@@ -104,15 +113,15 @@ class PC:
       gid = int(game)
 
       game = data[game]
-      info = game['info']
-      title = info[API_Indices.TITLE.value]
-      cover_image = info[API_Indices.COVER_IMAGE.value]
 
-      deals = game['deals'][0]
-      full_price = float(deals['price'])
-      try: sale_price = deals['salePrice']
-      except Exception: sale_price = full_price
-      url = f"{PC._DEAL_URL}{deals[API_Indices.DEAL_ID.value]}"
+      info = game[Your_Deals_Indices.INFO.value]
+      title = info[Your_Deals_Indices.TITLE.value]
+      cover_image = info[Your_Deals_Indices.COVER_IMAGE.value]
+
+      deal = game[Your_Deals_Indices.DEALS.value][0]
+      full_price = float(deal[Your_Deals_Indices.NORMAL_PRICE.value])
+      sale_price = float(deal[Your_Deals_Indices.SALE_PRICE.value])
+      url = f"{PC._DEAL_URL}{deal[Your_Deals_Indices.DEAL_ID.value]}"
 
       games.append(create_game_dictionary(title, full_price, sale_price, cover_image, gid, url))
     return games
