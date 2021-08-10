@@ -24,19 +24,24 @@ python3 main.py
 The database will be automatically created and populated, just give it some time to fetch the data.
 ## Arguments
 ```bash
--r, --rofi # only open a rofi window, do not check for updates
+# only open a rofi window, do not check for updates
+-r, --rofi
 ```
 ```bash
--s, --silent # only check for updates, do not open a rofi window
+# only check for updates, do not open a rofi window
+-s, --silent
 ```
 ```bash
--b, --browser BROWSER # specify the path of the browser you wish to open links with
+# specify the path of the browser you wish to open links with
+-b, --browser BROWSER
 ```
 ```bash
--pc, PC [PC ...] # ids of pc games to watch, find ids by searching for game at https://www.cheapshark.com/api/1.0/games?title=
+# to add PC games to your wishlist specify the ids following the -pc command
+-pc, PC [PC ...]
 ```
 ```bash
--ps, PS [PS ...] # urls of playstation games to watch, copy url of games from https://psdeals.net/
+# to add Playstation games to your wishlist specify the url following the -ps command
+-ps, PS [PS ...]
 ```
 
 ## Modification
