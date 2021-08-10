@@ -33,7 +33,7 @@ The database will be automatically created and populated, just give it some time
 ```
 ```bash
 # specify the path of the browser you wish to open links with
--b, --browser BROWSER
+-b BROWSER, --browser BROWSER
 ```
 ```bash
 # to add PC games to your wishlist specify the ids following the -pc command
