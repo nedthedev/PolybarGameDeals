@@ -37,11 +37,11 @@ The database will be automatically created and populated, just give it some time
 ```
 ```bash
 # to add PC games to your wishlist specify the ids following the -pc command
--pc, PC [PC ...]
+-pc PC [PC ...]
 ```
 ```bash
 # to add Playstation games to your wishlist specify the url following the -ps command
--ps, PS [PS ...]
+-ps PS [PS ...]
 ```
 
 ## Modification
