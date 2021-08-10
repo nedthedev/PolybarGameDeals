@@ -25,8 +25,7 @@ class DB_Calls:
   '''   "PUBLIC" METHODS   '''
   ############################
   ''' A simple function to fetch all the data from the given table. If the table
-      doesn't exist then it will be created.
-  '''
+      doesn't exist then it will be created. '''
   @staticmethod
   def get_data(cur, table):
     try:
@@ -37,8 +36,7 @@ class DB_Calls:
 
   ''' Add top deals to the database. Since top deals will time out and not exist
       anymore, we need to check if games in the database need to updated or
-      removed.
-  '''
+      removed. '''
   @staticmethod
   def add_top_deals(cur, table, existing_games, new_games):
     ''' When adding top deals, we need to remove the games that are no longer a "top deal" '''

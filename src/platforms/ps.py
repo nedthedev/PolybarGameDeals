@@ -72,7 +72,7 @@ class PS:
   ''' Check the the url matches the proper url regex '''
   @staticmethod
   def is_valid(url):
-    return re.search(fr"^{PS._PS_DEALS_URL}/..-store/game/\d+.*", url)
+    return re.search(fr"^{PS._PS_DEALS_URL}/..-store/game/\d+/.*", url)
 
   ''' Split the gid out of the url '''
   @staticmethod
