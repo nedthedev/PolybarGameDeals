@@ -15,13 +15,12 @@ class PS:
   '''   VARIABLES   '''
   #####################
   _TOP_DEALS_PAGES = 2  # this is the number of pages that contain deals
-  _TOP_DEALS_URL = "https://psdeals.net/collection/top_rated_sale?platforms=ps4&page="
-  _YOUR_DEALS_URL = "https://psdeals.net/game/"
   _PS_DEALS_URL = "https://psdeals.net"
-  # _PS_STORE_URL = "https://store.playstation.com/en-us/product/"
-  _GAME_LOOKUP_URL = "https://psdeals.net/search?search_query="
+  _TOP_DEALS_URL = f"{_PS_DEALS_URL}/collection/top_rated_sale?platforms=ps4&page="
+  _YOUR_DEALS_URL = f"{_PS_DEALS_URL}/game/"
+  _GAME_LOOKUP_URL = f"{_PS_DEALS_URL}/search?search_query="
   _SLEEP_DURATION = 5 # the number of seconds to sleep between page requests
-  _PS_PLUS_PRICE = "99.99" # a default price for PS+ only deals (arbitrary)
+  _PS_PLUS_PRICE = "99.99" # a default price for PS+ only deals
 
 
 
@@ -50,8 +49,7 @@ class PS:
 
     ''' Join the pages of games into one list '''
     joined_list = []
-    for list_ in parsed_data:
-      joined_list += list_
+    for list_ in parsed_data: joined_list += list_
     return joined_list
 
   ''' Get all of your top deals '''
@@ -94,8 +92,7 @@ class PS:
   @staticmethod
   def _make_request(url, sleep=True):
     r = make_request_(url)
-    if(r and sleep):
-      time.sleep(PS._SLEEP_DURATION)
+    if(r and sleep): time.sleep(PS._SLEEP_DURATION)
     return r
 
   ''' The deal page scraper and data parser '''
@@ -125,8 +122,7 @@ class PS:
         try:
           if("hours" in days_remaining.text): days_remaining = "< 1"
           else: days_remaining = int(''.join(filter(str.isdigit, days_remaining.text)))
-        except Exception:
-          days_remaining = 1
+        except Exception: days_remaining = 1
       else: days_remaining = -1
 
       ps_deals_url = game.find("span", {"itemprop": ["url"]})
@@ -135,12 +131,8 @@ class PS:
         psdeals_gid = PS.get_gid(ps_deals_url)
 
       cover_image = game.find("source")
-      if(cover_image):
-        cover_image = cover_image["data-srcset"].split(", ")[1].split(" ")[0]
-        # pss_gid = cover_image.split("/99/")[1].split("/0/")[0]
-      else:
-        cover_image = None
-        # pss_gid = None
+      if(cover_image): cover_image = cover_image["data-srcset"].split(", ")[1].split(" ")[0]
+      else: cover_image = None
 
       parsed_data.append(create_game_dictionary(title, full_price, sale_price, cover_image, psdeals_gid, ps_deals_url))
     return parsed_data
@@ -161,8 +153,7 @@ class PS:
     else: sale_price = full_price
 
     cover_image = html.find("source")
-    if(cover_image):
-      cover_image = cover_image["data-srcset"].split(", ")[1].split(" ")[0]
+    if(cover_image): cover_image = cover_image["data-srcset"].split(", ")[1].split(" ")[0]
 
     gid = PS.get_gid(url)
 

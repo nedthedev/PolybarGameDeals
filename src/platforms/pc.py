@@ -32,10 +32,11 @@ class PC:
   '''   VARIABLES   '''
   #####################
   _UPPER_PRICE = 10
-  _YOUR_DEALS_URL = "https://www.cheapshark.com/api/1.0/games?ids="
-  _TOP_DEALS_URL = "https://www.cheapshark.com/api/1.0/deals?upperPrice="
-  _DEAL_URL = "https://www.cheapshark.com/redirect?dealID="
-  _GAME_LOOKUP_URL = "https://www.cheapshark.com/api/1.0/games?title="
+  _BASE_URL = "https://www.cheapshark.com"
+  _YOUR_DEALS_URL = f"{_BASE_URL}/api/1.0/games?ids="
+  _TOP_DEALS_URL = f"{_BASE_URL}/api/1.0/deals?upperPrice="
+  _DEAL_URL = f"{_BASE_URL}/redirect?dealID="
+  _GAME_LOOKUP_URL = f"{_BASE_URL}/api/1.0/games?title="
 
 
 
@@ -51,18 +52,14 @@ class PC:
     if(upper_price == None): upper_price = PC._UPPER_PRICE
 
     data = PC._make_request(f"{PC._TOP_DEALS_URL}{upper_price}")
-    if(data):
-      data = PC._parse_data(data)
-      return data
+    if(data): return PC._parse_data(data)
     return None
 
   ''' Make request for the given id string '''
   @staticmethod
   def get_wishlist_games(id_string):
     data = PC._make_request(f"{PC._YOUR_DEALS_URL}{id_string}")
-    if(data):
-      data = PC._parse_wishlist_deals(data)
-      return data
+    if(data): return PC._parse_wishlist_deals(data)
     return None
 
   ''' Check the the url matches the proper url regex '''
@@ -84,8 +81,7 @@ class PC:
   @staticmethod
   def _make_request(url):
     r = make_request_(url)
-    if(r):
-      return r.json()
+    if(r): return r.json()
     return None
 
   ''' Parse the deals '''
