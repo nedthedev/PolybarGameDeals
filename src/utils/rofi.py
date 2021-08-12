@@ -6,6 +6,7 @@
 
 from enum import Enum
 import subprocess
+import webbrowser
 
 from .db_calls import DB_Calls
 from .db_enums import DB_Tables, DB_Indices
@@ -32,7 +33,7 @@ class WishlistGameOptions(Enum):
   DELETE_GAME = "Delete Game\n"
 
 ''' The main rofi logic loop wrapped in a function '''
-def launch_rofi(cur, games, title_lengths, browser):
+def launch_rofi(cur, games, title_lengths):
   while(True):
     category = choose_option(Categories)
     if(category):
@@ -42,7 +43,7 @@ def launch_rofi(cur, games, title_lengths, browser):
           if(chosen_game):
             url = DB_Calls.get_game_url(cur, table, chosen_game)
             if(url): 
-              if(confirmed(f"Open {url}")): open_url(browser, url)
+              if(confirmed(f"Open {url}")): open_url(url)
               else: break
             else: break
           else: break
@@ -64,11 +65,11 @@ def launch_rofi(cur, games, title_lengths, browser):
                     if(game_name):
                       if(chosen_wishlist == WishlistOptions.PC.value):
                         url = PC.search_url(game_name)
-                        if(confirmed(f"Open {url}")): open_url(browser, url)
+                        if(confirmed(f"Open {url}")): open_url(url)
                         else: break
                       else:
                         url = PS.search_url(game_name)
-                        if(confirmed(f"Open {url}")): open_url(browser, url)
+                        if(confirmed(f"Open {url}")): open_url(url)
                         else: break
                     else: break
                 # elif(wishlist_option == WishlistGameOptions.ADD_GAME.value):
@@ -100,7 +101,7 @@ def choose_option(Options):
   for val in Options:
     options += val.value
     rows+=1    
-  category = subprocess.run(["rofi", "-dmenu", "-p", "", "-lines", f"{rows}", "-columns", "1"], input=str.encode(f"{options}", encoding="UTF-8"), stdout=subprocess.PIPE)
+  category = subprocess.run(["/usr/bin/rofi", "-dmenu", "-p", "", "-lines", f"{rows}", "-columns", "1"], input=str.encode(f"{options}", encoding="UTF-8"), stdout=subprocess.PIPE, shell=False)
   if(category.returncode > 0): return None
   else: return category.stdout.decode("UTF-8")
 
@@ -129,14 +130,14 @@ def choose_game(category, games, title_lengths):
     longest_title = _longest_title(title_lengths[_table], _MIN_LENGTH)
     rofi_string = form_ps_string(rofi_string, games[_table], longest_title)
   else: return None, None
-  chosen_game = subprocess.run(["rofi", "-dmenu", "-p", "", "-lines", "12", "-columns", "2", "-width", f"-{longest_title*2+_ADDON}"], stdout=subprocess.PIPE, input=str.encode(rofi_string, encoding="UTF-8"))
+  chosen_game = subprocess.run(["/usr/bin/rofi", "-dmenu", "-p", "", "-lines", "12", "-columns", "2", "-width", f"-{longest_title*2+_ADDON}"], stdout=subprocess.PIPE, input=str.encode(rofi_string, encoding="UTF-8"), shell=False)
   if(chosen_game.returncode == 0): chosen_game = chosen_game.stdout.decode("UTF-8").split("$")[0].rstrip()
   else: chosen_game = None
   return chosen_game, _table
 
 ''' Rofi window confirming whether or not you want to open the link '''
 def get_input(prompt):
-  choice = subprocess.run(["rofi", "-dmenu", "-p", f"{prompt}", "-lines", "2", "-columns", "1"], stdout=subprocess.PIPE)
+  choice = subprocess.run(["/usr/bin/rofi", "-dmenu", "-p", f"{prompt}", "-lines", "2", "-columns", "1"], stdout=subprocess.PIPE, shell=False)
   if(choice.returncode == 0): return choice.stdout.decode("UTF-8")
   else: return None
 
@@ -144,19 +145,19 @@ def get_input(prompt):
 def confirmed(prompt):
   yes = "Yes\n"
   no = "No\n"
-  choice = subprocess.run(["rofi", "-dmenu", "-p", f"{prompt}", "-lines", "2", "-columns", "1"], input=str.encode(f"{yes}{no}", encoding="UTF-8"), stdout=subprocess.PIPE).stdout.decode("UTF-8")
+  choice = subprocess.run(["/usr/bin/rofi", "-dmenu", "-p", f"{prompt}", "-lines", "2", "-columns", "1"], input=str.encode(f"{yes}{no}", encoding="UTF-8"), stdout=subprocess.PIPE, shell=False).stdout.decode("UTF-8")
   if(choice == yes): return True
   else: return False
 
 ''' Rofi window confirming whether or not you want to open the link '''
 def add_game_url():
-  choice = subprocess.run(["rofi", "-dmenu", "-p", "Enter url of game to add", "-lines", "1", "-columns", "1"], input=str.encode(f"", encoding="UTF-8"), stdout=subprocess.PIPE)
+  choice = subprocess.run(["/usr/bin/rofi", "-dmenu", "-p", "Enter url of game to add", "-lines", "1", "-columns", "1"], input=str.encode(f"", encoding="UTF-8"), stdout=subprocess.PIPE, shell=False)
   if(choice.returncode > 0): return None
   else: return choice.stdout.decode("UTF-8")
 
 ''' Simple function to open url '''
-def open_url(browser, url):
-  subprocess.run([browser, url])
+def open_url(url):
+  webbrowser.open_new_tab(url)
 
 ''' Format the PC game deals into nice format for rendering with rofi '''
 def form_pc_string(rofi_string, games, longest_title):

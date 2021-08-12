@@ -14,11 +14,11 @@ class PS:
   #####################
   '''   VARIABLES   '''
   #####################
-  _TOP_DEALS_PAGES = 2  # this is the number of pages that contain deals
   _PS_DEALS_URL = "https://psdeals.net"
   _TOP_DEALS_URL = f"{_PS_DEALS_URL}/collection/top_rated_sale?platforms=ps4&page="
   _YOUR_DEALS_URL = f"{_PS_DEALS_URL}/game/"
   _GAME_LOOKUP_URL = f"{_PS_DEALS_URL}/search?search_query="
+  _TOP_DEALS_PAGES = 2  # this is the number of pages that contain deals
   _SLEEP_DURATION = 5 # the number of seconds to sleep between page requests
   _PS_PLUS_PRICE = "99.99" # a default price for PS+ only deals
 
@@ -76,7 +76,7 @@ class PS:
   @staticmethod
   def get_gid(url):
     try: return url.split("game/")[1].split("/")[0]
-    except Exception: return ""
+    except Exception: return None
 
   ''' Return the url to search for game '''
   @staticmethod
@@ -156,5 +156,7 @@ class PS:
     if(cover_image): cover_image = cover_image["data-srcset"].split(", ")[1].split(" ")[0]
 
     gid = PS.get_gid(url)
+    ''' If not gid, then the game url should not have been considered valid '''
+    if(not gid): return None
 
     return create_game_dictionary(title, full_price, sale_price, cover_image, gid, url)

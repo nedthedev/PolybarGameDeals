@@ -41,8 +41,6 @@ def check_args():
   ''''''
   parser.add_argument("-s", "--silent", help="update games if necessary, pass this argument if you don't want a rofi window to open", action="store_true")
   ''''''
-  parser.add_argument("-b", "--browser", help="specify the path of the browser you want to open links with", default="/usr/bin/firefox")
-  ''''''
   parser.add_argument("-ps", help="url of game from https://psdeals.net/. Just search for the game you want to add, copy the url, and paste it, along with all other urls, following the -ps argument", action="extend", nargs="+")
   ''''''
   parser.add_argument("-pc", help="id of pc game from https://www.cheapshark.com. To find the id of your game, search for it at https://www.cheapshark.com/api/1.0/games?title=game-name, replacing game-name with your game name, like \"Dishonored 2\". So, then you'd have https://www.cheapshark.com/api/1.0/games?title=Dishonored-2", action="extend", nargs="+")
@@ -133,8 +131,7 @@ if __name__ == "__main__":
 
   ''' Rofi window logic loop '''
   if(args.rofi or not args.silent):
-    if(os.path.exists(args.browser)): launch_rofi(cur, games, title_lengths, args.browser)
-    else: print(f"No file at {args.browser}...")
+    launch_rofi(cur, games, title_lengths)
   
   con.commit()
   con.close()

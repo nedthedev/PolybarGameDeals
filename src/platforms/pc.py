@@ -1,7 +1,8 @@
 #!/usr/bin/python3 
 
 '''
-  This script is for fetching and parsing the PC deals, deals from cheapshark.com
+  This script is for fetching and parsing the PC deals. All deals are
+  discovered using the cheapshark.com API
 '''
 
 import re
@@ -31,12 +32,12 @@ class PC:
   #####################
   '''   VARIABLES   '''
   #####################
-  _UPPER_PRICE = 10
   _BASE_URL = "https://www.cheapshark.com"
   _YOUR_DEALS_URL = f"{_BASE_URL}/api/1.0/games?ids="
   _TOP_DEALS_URL = f"{_BASE_URL}/api/1.0/deals?upperPrice="
   _DEAL_URL = f"{_BASE_URL}/redirect?dealID="
   _GAME_LOOKUP_URL = f"{_BASE_URL}/api/1.0/games?title="
+  _UPPER_PRICE = 10
 
 
 
@@ -45,8 +46,7 @@ class PC:
   ############################
   ''' Makes a request to get the top deals, parses them, and returns that data. 
       If an upper_price is provided no deals greater than that amount will be
-      discovered. 
-  '''
+      discovered. '''
   @staticmethod
   def get_top_deals(upper_price=None):
     if(upper_price == None): upper_price = PC._UPPER_PRICE
@@ -84,7 +84,7 @@ class PC:
     if(r): return r.json()
     return None
 
-  ''' Parse the deals '''
+  ''' Parse the top deals data '''
   @staticmethod
   def _parse_data(data):
     parsed_data = []
@@ -98,8 +98,7 @@ class PC:
       gid = game[Top_Deals_Indices.GAME_ID.value]
 
       ''' 
-      Unfortunately, or fortunately?, the api can have lots of duplicates, some with different prices, so I must do some checking to remove dupes.
-      '''
+      Unfortunately, or fortunately?, the api can have lots of duplicates, some with different prices, so I must do some checking to remove dupes. '''
       if(not title in titles):  # If this title hasn't been added then add it
         titles.append(title)
         parsed_data.append(create_game_dictionary(title, full_price, sale_price, cover_image, gid, url))
@@ -109,6 +108,7 @@ class PC:
             existing_game.update({DB_Columns.SALE_PRICE.value: sale_price, DB_Columns.URL.value: url})
     return parsed_data
 
+  ''' Parse your wishlist deals data '''
   @staticmethod
   def _parse_wishlist_deals(data):
     games = []

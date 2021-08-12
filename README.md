@@ -3,7 +3,7 @@ This script provides an all-in-one place for PC and Playstation deals. I built t
 
 ## Dependencies
   - Rofi
-  - A browser (default Firefox)
+  - A browser
   - Python 3
     - beautifulsoup4
 
@@ -32,10 +32,6 @@ The database will be automatically created and populated, just give it some time
 -s, --silent
 ```
 ```bash
-# specify the path of the browser you wish to open links with
--b BROWSER, --browser BROWSER
-```
-```bash
 # to add PC games to your wishlist specify the ids following the -pc command
 -pc PC [PC ...]
 ```
@@ -48,10 +44,8 @@ The database will be automatically created and populated, just give it some time
 ### Want to do something else with the data?
 Feel free to tweak this however you want. For instance, if you don't want to use Rofi then you need only replace the following lines in main.[]()py with whatever you want to do with the data:
 ```python
-if(os.path.exists(args.browser)):
-  launch_rofi(cur, games, title_lengths, args.browser)
-else: 
-  print(f"No file at {args.browser}...")
+if(args.rofi or not args.silent):
+    launch_rofi(cur, games, title_lengths)
 ```
 
 ## Notes
