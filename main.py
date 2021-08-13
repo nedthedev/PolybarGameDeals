@@ -21,7 +21,6 @@ from src.platforms.ps import PS
 from src.utils.db_enums import DB_Tables
 from src.utils.db_calls import DB_Calls
 from src.utils.rofi import launch_rofi
-from src.platforms.ps import PS
 
 
 
