@@ -141,3 +141,4 @@ games.db
 tests.py
 test.db
 updater.sh
+.vscode/
