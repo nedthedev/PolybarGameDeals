@@ -116,8 +116,7 @@ class DB_Calls:
         for index, game in enumerate(games[table]):
             if(game[DB_Indices.TITLE.value] == title):
                 del games[table][index]
-                cur.execute(
-                    """DELETE FROM {table} WHERE TITLE=?""", (title, ))
+                DB_Calls.delete_game_with_title(cur, table, title)
                 break
         return games
 
