@@ -17,8 +17,8 @@ class PS:
     '''   VARIABLES   '''
     #####################
     _PS_DEALS_URL = "https://psdeals.net"
-    _TOP_DEALS_URL = f"""{_PS_DEALS_URL}/collection/
-                         top_rated_sale?platforms=ps4&page="""
+    _TOP_DEALS_URL = (f"{_PS_DEALS_URL}/collection/" +
+                      "top_rated_sale?platforms=ps4&page=")
     _YOUR_DEALS_URL = f"{_PS_DEALS_URL}/game/"
     _GAME_LOOKUP_URL = f"{_PS_DEALS_URL}/search?search_query="
     _TOP_DEALS_PAGES = 2  # this is the number of pages that contain deals
@@ -31,13 +31,10 @@ class PS:
     ''' Fetches the top deals pages, scrapes them, and gathers the relevant
         data '''
     @staticmethod
-    def get_top_deals(pages=None, upper_price=None):
+    def get_top_deals(upper_price=None):
         ''' set the number of pages to fetch '''
-        if(not pages):
-            pages = PS._TOP_DEALS_PAGES
-
         parsed_data = []
-        for _page in range(1, pages+1):
+        for _page in range(1, PS._TOP_DEALS_PAGES+1):
             if(_page == PS._TOP_DEALS_PAGES):
                 sleep = False
             else:
@@ -110,7 +107,7 @@ class PS:
     @staticmethod
     def _parse_top_deals(data):
         html = BeautifulSoup(data, "html.parser")
-        games = html.find_all("div", {"class": ["game-collection-item-col"]})
+        games = html.find_all("div", "game-collection-item-col")
         parsed_data = []
         for game in games:
             title = game.find("p", "game-collection-item-details-title")
@@ -162,16 +159,13 @@ class PS:
             else:
                 cover_image = None
 
-            parsed_data.append(
-                create_game_dictionary(
-                    title,
-                    full_price,
-                    sale_price,
-                    cover_image,
-                    psdeals_gid,
-                    ps_deals_url
-                )
-            )
+            parsed_data.append(create_game_dictionary(
+                                  title,
+                                  full_price,
+                                  sale_price,
+                                  cover_image,
+                                  psdeals_gid,
+                                  ps_deals_url))
         return parsed_data
 
     ''' Individual game pages have different html than top pages, so we must

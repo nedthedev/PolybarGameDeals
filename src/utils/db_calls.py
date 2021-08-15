@@ -27,66 +27,20 @@ class DB_Calls:
     table doesn't exist then it will be created. '''
     @staticmethod
     def get_data(cur, table):
-        if(table == DB_Tables.TOP_PC.value):
-            try:
-                cur.execute("""SELECT SALE_PRICE FROM TOP_PC""")
-            except Exception:
-                cur.execute(""" CREATE TABLE TOP_PC(
-                    title TEXT NOT NULL UNIQUE,
-                    full_price REAL,
-                    sale_price REAL,
-                    cover_image TEXT,
-                    url TEXT NOT NULL UNIQUE,
-                    gid INTEGER UNIQUE,
-                    update_time TEXT,
-                    title_length INTEGER)""")
-            return cur.execute("""SELECT * FROM TOP_PC
-                               ORDER BY sale_price ASC""").fetchall()
-        elif(table == DB_Tables.TOP_PS.value):
-            try:
-                cur.execute("""SELECT SALE_PRICE FROM TOP_PS""")
-            except Exception:
-                cur.execute("""CREATE TABLE TOP_PS(
-                    title TEXT NOT NULL UNIQUE,
-                    full_price REAL,
-                    sale_price REAL,
-                    cover_image TEXT,
-                    url TEXT NOT NULL UNIQUE,
-                    gid INTEGER UNIQUE,
-                    update_time TEXT,
-                    title_length INTEGER)""")
-            return cur.execute("""SELECT * FROM TOP_PS
-                               ORDER BY sale_price ASC""").fetchall()
-        elif(table == DB_Tables.PC_WISHLIST.value):
-            try:
-                cur.execute("""SELECT SALE_PRICE FROM PC_WISHLIST""")
-            except Exception:
-                cur.execute("""CREATE TABLE TOP_PS(
-                    title TEXT NOT NULL UNIQUE,
-                    full_price REAL,
-                    sale_price REAL,
-                    cover_image TEXT,
-                    url TEXT NOT NULL UNIQUE,
-                    gid INTEGER UNIQUE,
-                    update_time TEXT,
-                    title_length INTEGER)""")
-            return cur.execute("""SELECT * FROM PC_WISHLIST
-                               ORDER BY sale_price ASC""").fetchall()
-        elif(table == DB_Tables.PS_WISHLIST.value):
-            try:
-                cur.execute("""SELECT SALE_PRICE FROM PS_WISHLIST""")
-            except Exception:
-                cur.execute("""CREATE TABLE TOP_PS(
-                    title TEXT NOT NULL UNIQUE,
-                    full_price REAL,
-                    sale_price REAL,
-                    cover_image TEXT,
-                    url TEXT NOT NULL UNIQUE,
-                    gid INTEGER UNIQUE,
-                    update_time TEXT,
-                    title_length INTEGER)""")
-            return cur.execute("""SELECT * FROM PS_WISHLIST
-                               ORDER BY sale_price ASC""").fetchall()
+        try:
+            cur.execute(f"""SELECT SALE_PRICE FROM {table}""")
+        except Exception:
+            cur.execute(f"""CREATE TABLE {table}(
+                title TEXT NOT NULL UNIQUE,
+                full_price REAL,
+                sale_price REAL,
+                cover_image TEXT,
+                url TEXT NOT NULL UNIQUE,
+                gid INTEGER UNIQUE,
+                update_time TEXT,
+                title_length INTEGER)""")
+        return cur.execute(f"""SELECT * FROM {table}
+                            ORDER BY sale_price ASC""").fetchall()
 
     ''' Add top deals to the database. Since top deals will time out and not
         exist anymore, we need to check if games in the database need to
@@ -113,125 +67,58 @@ class DB_Calls:
 
         ''' Update the remainder of the games that are already present, add the
         games that are new entries to the database. '''
-        if(table == DB_Tables.TOP_PC.value):
-            for game in new_games:
-                if(cur.execute("""SELECT * FROM TOP_PC WHERE TITLE=?""",
-                   (game[DB_Columns.TITLE.value], )).fetchone()):
-                    cur.execute("""UPDATE TOP_PC SET
-                                sale_price=?,
-                                url=?,
-                                update_time=?
-                                WHERE TITLE=?""",
-                                (game[DB_Columns.SALE_PRICE.value],
-                                    game[DB_Columns.URL.value],
-                                    datetime.now(),
-                                    game[DB_Columns.TITLE.value]))
-                else:
-                    cur.execute("""INSERT INTO TOP_PC VALUES(
-                                   ?, ?, ?, ?, ?, ?, ?, ?)""",
-                                (game[DB_Columns.TITLE.value],
-                                    game[DB_Columns.FULL_PRICE.value],
-                                    game[DB_Columns.SALE_PRICE.value],
-                                    game[DB_Columns.COVER_IMAGE.value],
-                                    game[DB_Columns.URL.value],
-                                    game[DB_Columns.GID.value],
-                                    datetime.now(),
-                                    len(game[DB_Columns.TITLE.value])))
-        elif(table == DB_Tables.TOP_PS.value):
-            for game in new_games:
-                if(cur.execute("""SELECT * FROM TOP_PS WHERE TITLE=?""",
-                               (game[DB_Columns.TITLE.value], )).fetchone()):
-                    cur.execute("""UPDATE TOP_PS
-                                SET sale_price=?,
-                                url=?,
-                                update_time=?
-                                WHERE TITLE=?""",
-                                (game[DB_Columns.SALE_PRICE.value],
-                                    game[DB_Columns.URL.value],
-                                    datetime.now(),
-                                    game[DB_Columns.TITLE.value]))
-                else:
-                    cur.execute("""INSERT INTO TOP_PS VALUES(
+        for game in new_games:
+            if(cur.execute(f"""SELECT * FROM {table} WHERE TITLE=?""",
+               (game[DB_Columns.TITLE.value], )).fetchone()):
+                cur.execute(f"""UPDATE {table} SET
+                            sale_price=?,
+                            url=?,
+                            update_time=?
+                            WHERE TITLE=?""",
+                            (game[DB_Columns.SALE_PRICE.value],
+                                game[DB_Columns.URL.value],
+                                datetime.now(),
+                                game[DB_Columns.TITLE.value]))
+            else:
+                cur.execute(f"""INSERT INTO {table} VALUES(
                                 ?, ?, ?, ?, ?, ?, ?, ?)""",
-                                (game[DB_Columns.TITLE.value],
-                                    game[DB_Columns.FULL_PRICE.value],
-                                    game[DB_Columns.SALE_PRICE.value],
-                                    game[DB_Columns.COVER_IMAGE.value],
-                                    game[DB_Columns.URL.value],
-                                    game[DB_Columns.GID.value],
-                                    datetime.now(),
-                                    len(game[DB_Columns.TITLE.value])))
+                            (game[DB_Columns.TITLE.value],
+                                game[DB_Columns.FULL_PRICE.value],
+                                game[DB_Columns.SALE_PRICE.value],
+                                game[DB_Columns.COVER_IMAGE.value],
+                                game[DB_Columns.URL.value],
+                                game[DB_Columns.GID.value],
+                                datetime.now(),
+                                len(game[DB_Columns.TITLE.value])))
 
     @staticmethod
     def game_exists(cur, table, cls, id):
-        if(table == DB_Tables.PC_WISHLIST.value):
-            if(cls.is_valid(id)):
-                if(cur.execute("""SELECT * FROM PC_WISHLIST
-                               WHERE gid=? OR url=?""", (id, id)).fetchone()):
-                    return True
-        elif(table == DB_Tables.PS_WISHLIST.value):
-            if(cls.is_valid(id)):
-                if(cur.execute("""SELECT * FROM PS_WISHLIST
-                               WHERE gid=? OR url=?""", (id, id)).fetchone()):
-                    return True
+        if(cls.is_valid(id)):
+            if(cur.execute(f"""SELECT * FROM {table}
+                            WHERE gid=? OR url=?""", (id, id)).fetchone()):
+                return True
         return False
 
     ''' Delete game with given title from the database '''
     @staticmethod
     def delete_game_with_title(cur, table, title):
-        if(table == DB_Tables.TOP_PC.value):
-            cur.execute("""DELETE FROM TOP_PC WHERE TITLE=?""", (title, ))
-        elif(table == DB_Tables.TOP_PS.value):
-            cur.execute("""DELETE FROM TOP_PS WHERE TITLE=?""", (title, ))
-        elif(table == DB_Tables.PC_WISHLIST.value):
-            cur.execute("""DELETE FROM PC_WISHLIST WHERE TITLE=?""", (title, ))
-        elif(table == DB_Tables.PS_WISHLIST.value):
-            cur.execute("""DELETE FROM PS_WISHLIST WHERE TITLE=?""", (title, ))
+        cur.execute(f"""DELETE FROM {table} WHERE TITLE=?""", (title, ))
 
     @staticmethod
     def delete_game_with_id(cur, table, id):
-        if(table == DB_Tables.TOP_PC.value):
-            cur.execute("""DELETE FROM TOP_PC WHERE gid=?""", (id, ))
-        elif(table == DB_Tables.TOP_PS.value):
-            cur.execute("""DELETE FROM TOP_PS WHERE gid=?""", (id, ))
-        elif(table == DB_Tables.PC_WISHLIST.value):
-            cur.execute("""DELETE FROM PC_WISHLIST WHERE gid=?""", (id, ))
-        elif(table == DB_Tables.PS_WISHLIST.value):
-            cur.execute("""DELETE FROM PS_WISHLIST WHERE gid=?""", (id, ))
+        cur.execute(f"""DELETE FROM {table} WHERE gid=?""", (id, ))
 
     ''' Delete game with given title from the database and the list of games
-      This function is used exclusively to delete games through the rofi
-      prompt '''
+        This function is used exclusively to delete games through the rofi
+        prompt '''
     @staticmethod
     def delete_game_now(cur, table, title, games):
-        if(table == DB_Tables.TOP_PC.value):
-            for index, game in enumerate(games[table]):
-                if(game[DB_Indices.TITLE.value] == title):
-                    del games[table][index]
-                    cur.execute(
-                        """DELETE FROM TOP_PC WHERE TITLE=?""", (title, ))
-                    break
-        elif(table == DB_Tables.TOP_PS.value):
-            for index, game in enumerate(games[table]):
-                if(game[DB_Indices.TITLE.value] == title):
-                    del games[table][index]
-                    cur.execute(
-                        """DELETE FROM TOP_PS WHERE TITLE=?""", (title, ))
-                    break
-        elif(table == DB_Tables.PC_WISHLIST.value):
-            for index, game in enumerate(games[table]):
-                if(game[DB_Indices.TITLE.value] == title):
-                    del games[table][index]
-                    cur.execute(
-                        """DELETE FROM PC_WISHLIST WHERE TITLE=?""", (title, ))
-                    break
-        elif(table == DB_Tables.PS_WISHLIST.value):
-            for index, game in enumerate(games[table]):
-                if(game[DB_Indices.TITLE.value] == title):
-                    del games[table][index]
-                    cur.execute(
-                        """DELETE FROM PS_WISHLIST WHERE TITLE=?""", (title, ))
-                    break
+        for index, game in enumerate(games[table]):
+            if(game[DB_Indices.TITLE.value] == title):
+                del games[table][index]
+                cur.execute(
+                    """DELETE FROM {table} WHERE TITLE=?""", (title, ))
+                break
         return games
 
     ''' Called when wanting to add new wishlist PC games '''
@@ -249,7 +136,7 @@ class DB_Calls:
                 else:
                     id_string += f"{id}"
                 ''' If it is in the database then we will update '''
-                if(cur.execute("""SELECT update_time FROM PC_WISHLIST
+                if(cur.execute(f"""SELECT update_time FROM {table}
                                WHERE gid=?""", (id, )).fetchone()):
                     update_ids.append(id)
         games = PC.get_wishlist_games(id_string)
@@ -257,7 +144,7 @@ class DB_Calls:
             for game in games:
                 ''' If it is a game that we needed to update '''
                 if(game[DB_Columns.GID.value] in update_ids):
-                    cur.execute("""UPDATE PC_WISHLIST SET
+                    cur.execute(f"""UPDATE {table} SET
                                 full_price=?,
                                 sale_price=?,
                                 url=?,
@@ -269,7 +156,7 @@ class DB_Calls:
                                     time,
                                     game[DB_Columns.GID.value]))
                 else:
-                    cur.execute("""INSERT INTO PC_WISHLIST
+                    cur.execute(f"""INSERT INTO {table}
                                 VALUES(?, ?, ?, ?, ?, ?, ?, ?)""",
                                 (game[DB_Columns.TITLE.value],
                                     game[DB_Columns.FULL_PRICE.value],
@@ -288,11 +175,11 @@ class DB_Calls:
         games = []
         existing_games = []
         for index, url in enumerate(urls):
-            gid = PS.get_gid(url)
             if(PS.is_valid(url)):
+                gid = PS.get_gid(url)
                 ''' If the game already exists in the database then we need
                     only update '''
-                if(cur.execute("""SELECT url, update_time FROM PS_WISHLIST
+                if(cur.execute(f"""SELECT url, update_time FROM {table}
                                WHERE URL=? OR GID=?""", (url, gid)
                                ).fetchone()):
                     existing_games.append(gid)
@@ -309,7 +196,7 @@ class DB_Calls:
             for game in games:
                 ''' If it is a game that we needed to update '''
                 if(game[DB_Columns.GID.value] in existing_games):
-                    cur.execute("""UPDATE PS_WISHLIST SET
+                    cur.execute(f"""UPDATE {table} SET
                                 full_price=?,
                                 sale_price=?,
                                 update_time=?
@@ -319,7 +206,7 @@ class DB_Calls:
                                     time,
                                     game[DB_Columns.GID.value]))
                 else:
-                    cur.execute("""INSERT INTO PS_WISHLIST
+                    cur.execute(f"""INSERT INTO {table}
                                 VALUES(?, ?, ?, ?, ?, ?, ?, ?)""",
                                 (game[DB_Columns.TITLE.value],
                                     game[DB_Columns.FULL_PRICE.value],
@@ -334,46 +221,19 @@ class DB_Calls:
     ''' Fetch a game's url given the title and table of the game '''
     @staticmethod
     def get_game_url(cur, table, title):
-        if(table == DB_Tables.TOP_PC.value):
-            url = cur.execute(
-                """SELECT url FROM TOP_PC WHERE TITLE=?""",
-                (title, )).fetchone()
-        elif(table == DB_Tables.TOP_PS.value):
-            url = cur.execute(
-                """SELECT url FROM TOP_PS WHERE TITLE=?""",
-                (title, )).fetchone()
-        elif(table == DB_Tables.PC_WISHLIST.value):
-            url = cur.execute(
-                """SELECT url FROM PC_WISHLIST WHERE TITLE=?""",
-                (title, )).fetchone()
-        elif(table == DB_Tables.PS_WISHLIST.value):
-            url = cur.execute(
-                """SELECT url FROM PS_WISHLIST WHERE TITLE=?""",
-                (title, )).fetchone()
+        url = cur.execute(
+            f"""SELECT url FROM {table} WHERE TITLE=?""",
+            (title, )).fetchone()
         if(url):
             return url[0]
-        else:
-            return None
+        return None
 
     ''' Simple function to get the longest title from the given table '''
     @staticmethod
     def get_longest_title(cur, table):
-        if(table == DB_Tables.TOP_PC.value):
-            length = cur.execute(
-                """SELECT title_length FROM TOP_PC
-                ORDER BY title_length DESC""").fetchone()
-        elif(table == DB_Tables.TOP_PS.value):
-            length = cur.execute(
-                """SELECT title_length FROM TOP_PS
-                ORDER BY title_length DESC""").fetchone()
-        elif(table == DB_Tables.PC_WISHLIST.value):
-            length = cur.execute(
-                """SELECT title_length FROM PC_WISHLIST
-                ORDER BY title_length DESC""").fetchone()
-        elif(table == DB_Tables.PS_WISHLIST.value):
-            length = cur.execute(
-                """SELECT title_length FROM PS_WISHLIST
-                ORDER BY title_length DESC""").fetchone()
+        length = cur.execute(
+            f"""SELECT title_length FROM {table}
+            ORDER BY title_length DESC""").fetchone()
         if(length):
             return length[0]
         else:
@@ -384,18 +244,11 @@ class DB_Calls:
         then it will check the elapsed time. '''
     @staticmethod
     def needs_updating(cur, table, update_delay=None):
-        if(table == DB_Tables.TOP_PC.value):
-            try:
-                past_time = DB_Calls._str_to_dt(cur.execute(
-                    """SELECT update_time FROM TOP_PC""").fetchone()[0])
-            except Exception:
-                return True
-        elif(table == DB_Tables.TOP_PS.value):
-            try:
-                past_time = DB_Calls._str_to_dt(cur.execute(
-                    """SELECT update_time FROM TOP_PS""").fetchone()[0])
-            except Exception:
-                return True
+        try:
+            past_time = DB_Calls._str_to_dt(cur.execute(
+                f"""SELECT update_time FROM {table}""").fetchone()[0])
+        except Exception:
+            return True
         if(not update_delay):
             update_delay = DB_Calls._UPDATE_DELAY
         return ((datetime.now() - past_time) > update_delay)

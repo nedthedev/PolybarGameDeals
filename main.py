@@ -86,7 +86,7 @@ def update_wishlist_games(cur, table, wishlist_args, update_delay=None):
                                          outdated_games+wishlist_args)
 
 
-def update_top_games(cur, table, download_games_function, update_delay=None,
+def update_top_games(cur, table, cls, update_delay=None,
                      upper_price=None):
     """A function to update the top game deals.
 
@@ -103,7 +103,7 @@ def update_top_games(cur, table, download_games_function, update_delay=None,
     """
     if(DB_Calls.needs_updating(cur, table, update_delay)):
         old_top = DB_Calls.get_data(cur, table)
-        new_top = download_games_function(upper_price)
+        new_top = cls.get_top_deals(upper_price=upper_price)
         if(new_top):
             DB_Calls.add_top_deals(cur, table, old_top, new_top)
 
@@ -143,9 +143,9 @@ if __name__ == "__main__":
     if(not args.rofi):
         ''' update the top games '''
         update_top_games(cur, DB_Tables.TOP_PC.value,
-                         PC.get_top_deals, CUSTOM_UPDATE_DELAY, PC_UPPER_PRICE)
+                         PC, CUSTOM_UPDATE_DELAY, PC_UPPER_PRICE)
         update_top_games(cur, DB_Tables.TOP_PS.value,
-                         PS.get_top_deals, CUSTOM_UPDATE_DELAY)
+                         PS, CUSTOM_UPDATE_DELAY)
         ''' update wishlist games '''
         update_wishlist_games(cur, DB_Tables.PC_WISHLIST.value, args.pc)
         update_wishlist_games(cur, DB_Tables.PS_WISHLIST.value, args.ps)
