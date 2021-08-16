@@ -52,10 +52,6 @@ def launch_rofi(cur, games, title_lengths):
                         if(url):
                             if(_confirmed(f"Open {url}")):
                                 _open_url(url)
-                            else:
-                                break
-                        else:
-                            break
                     else:
                         break
             elif(category == Categories.MANAGE_WISHLIST.value):
@@ -74,8 +70,12 @@ def launch_rofi(cur, games, title_lengths):
                                             games,
                                             title_lengths)
                                         if(chosen_game):
-                                            games = DB_Calls.delete_game_now(
-                                                cur, table, chosen_game, games)
+                                            if(_confirmed(
+                                                    f"Delete {chosen_game}")):
+                                                games = (
+                                                    DB_Calls.delete_game_now(
+                                                        cur, table,
+                                                        chosen_game, games))
                                         else:
                                             break
                                 elif(wishlist_option ==
@@ -89,14 +89,10 @@ def launch_rofi(cur, games, title_lengths):
                                                 url = PC.search_url(game_name)
                                                 if(_confirmed(f"Open {url}")):
                                                     _open_url(url)
-                                                else:
-                                                    break
                                             else:
                                                 url = PS.search_url(game_name)
                                                 if(_confirmed(f"Open {url}")):
                                                     _open_url(url)
-                                                else:
-                                                    break
                                         else:
                                             break
                                 else:
