@@ -7,8 +7,9 @@
 
 import re
 from enum import Enum
+from src.utils.db_calls import DB_Calls
 
-from ..utils.db_enums import DB_Columns
+from ..utils.db_enums import DB_Columns, DB_Tables
 from .shared import create_game_dictionary, make_request_
 
 
@@ -45,11 +46,18 @@ class PC:
     ############################
     '''   "PUBLIC" METHODS   '''
     ############################
-    ''' Makes a request to get the top deals, parses them, and returns that
-      data. If an upper_price is provided no deals greater than that amount
-      will be discovered. '''
     @staticmethod
     def get_top_deals(upper_price=None):
+        """Makes a request to get the top deals, parses them, and returns that
+           data. If an upper_price is provided no deals greater than that
+           amount will be discovered.
+
+        :param upper_price: the upper price limit for pc deals, defaults to
+                            None
+        :type upper_price:  float, optional
+        :return:            parsed data for adding to database, or None
+        :rtype:             list or None
+        """
         if(not upper_price):
             upper_price = PC._UPPER_PRICE
 
@@ -58,38 +66,82 @@ class PC:
             return PC._parse_data(data)
         return None
 
-    ''' Make request for the given id string '''
     @staticmethod
-    def get_wishlist_games(id_string):
+    def get_wishlist_deals(cur, ids):
+        """Make request for the given id string.
+
+        :param id_string: a formatted string of ids for request
+        :type id_string:  str
+        :return:          parsed data for adding to database if all goes well,
+                          or None
+        :rtype:           list or None
+        """
+        id_string = ""
+        update_ids = []
+        for index, id in enumerate(ids):
+            if(PC.is_valid(id)):
+                ''' Form the valid string of ids for fetching data from api
+                    with one request '''
+                if(not index == len(ids)-1):
+                    id_string += f"{id},"
+                else:
+                    id_string += f"{id}"
+                ''' If it is in the database then we will update '''
+                if(DB_Calls.game_exists(cur, DB_Tables.PC_WISHLIST.value, id)):
+                    update_ids.append(id)
         data = PC._make_request(f"{PC._YOUR_DEALS_URL}{id_string}")
         if(data):
-            return PC._parse_wishlist_deals(data)
-        return None
+            return update_ids, PC._parse_wishlist_deals(data)
+        return None, None
 
-    ''' Check the the url matches the proper url regex '''
     @staticmethod
     def is_valid(id):
+        """Check the the url matches the proper url regex.
+
+        :param id:  id to test
+        :type id:   int
+        :return:    True if valid, False if invalid
+        :rtype:     bool
+        """
         return re.search(r"^\d+$", str(id))
 
-    ''' Return the url to search for game '''
     @staticmethod
     def search_url(game_name):
+        """Return the url to search for game.
+
+        :param game_name: the title of the game you want to lookup
+        :type game_name:  str
+        :return:          the url for searching the game
+        :rtype:           str
+        """
         return f"{PC._GAME_LOOKUP_URL}{game_name}"
 
     #############################
     '''   "PRIVATE" METHODS   '''
     #############################
-    ''' Makes a request for the provided url (the api) '''
     @staticmethod
     def _make_request(url):
+        """Makes a request for the provided url.
+
+        :param url: url to make request for
+        :type url:  str
+        :return:    jsonified request data on successful request, or None
+        :rtype:     dict or None
+        """
         r = make_request_(url)
         if(r):
             return r.json()
         return None
 
-    ''' Parse the top deals data '''
     @staticmethod
     def _parse_data(data):
+        """Parse the provided data for the information we need.
+
+        :param data: api data to parse
+        :type data:  dict
+        :return:     a list of dictionaries representing each game
+        :rtype:      list
+        """
         parsed_data = []
         titles = []
         for game in data:
@@ -118,9 +170,15 @@ class PC:
                             DB_Columns.URL.value: url})
         return parsed_data
 
-    ''' Parse your wishlist deals data '''
     @staticmethod
     def _parse_wishlist_deals(data):
+        """Parse the provided data for the information we need.
+
+        :param data: api data to parse
+        :type data:  dict
+        :return:     a list of dictionaries representing each game
+        :rtype:      list
+        """
         games = []
         for game in data:
             gid = int(game)

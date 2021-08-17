@@ -40,7 +40,7 @@ def check_args():
     """Parse command line arguments.
 
     :return: a parser object
-    :rtype: ArgumentParser
+    :rtype:  ArgumentParser
     """
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -63,12 +63,12 @@ def check_args():
 def update_wishlist_games(cur, table, wishlist_args, update_delay=None):
     """A function to update wishlist games.
 
-    :param cur: database cursor object
-    :type cur: Cursor
-    :param table: name of table to work on
-    :type table: str
+    :param cur:           database cursor object
+    :type cur:            Cursor
+    :param table:         name of table to work on
+    :type table:          str
     :param wishlist_args: list of wishlist games to add to database
-    :type wishlist_args: list
+    :type wishlist_args:  list
     """
 
     ''' Figure out which games need updating '''
@@ -79,27 +79,34 @@ def update_wishlist_games(cur, table, wishlist_args, update_delay=None):
         return []
     else:
         if(table == DB_Tables.PC_WISHLIST.value):
-            return DB_Calls.add_pc_games(cur, table,
-                                         outdated_games+wishlist_args)
+            _table = DB_Tables.PC_WISHLIST.value
+            games_to_update, new_games = (
+                PC.get_wishlist_deals(cur, outdated_games+wishlist_args)
+            )
         elif(table == DB_Tables.PS_WISHLIST.value):
-            return DB_Calls.add_ps_games(cur, table,
-                                         outdated_games+wishlist_args)
+            _table = DB_Tables.PS_WISHLIST.value
+            games_to_update, new_games = (
+                PS.get_wishlist_deals(cur, outdated_games+wishlist_args))
+        if(new_games):
+            DB_Calls.add_games(cur, _table, new_games, games_to_update)
 
 
 def update_top_games(cur, table, cls, update_delay=None,
                      upper_price=None):
     """A function to update the top game deals.
 
-    :param cur: database cursor object
-    :type cur: Cursor
-    :param table: name of table to work on
-    :type table: str
+    :param cur:                     database cursor object
+    :type cur:                      Cursor
+    :param table:                   name of table to work on
+    :type table:                    str
     :param download_games_function: function for getting the new game data
-    :type download_games_function: function
-    :param update_delay: [description], defaults to None
-    :type update_delay: [type], optional
-    :param upper_price: [description], defaults to None
-    :type upper_price: [type], optional
+    :type download_games_function:  function
+    :param update_delay:            the amount of time that needs to pass
+                                    before fetching new data, defaults to None
+    :type update_delay:             datetime, optional
+    :param upper_price:             the upper price limit for pc deals,
+                                    defaults to None
+    :type upper_price:              float, optional
     """
     if(DB_Calls.needs_updating(cur, table, update_delay)):
         old_top = DB_Calls.get_data(cur, table)
@@ -126,15 +133,14 @@ if __name__ == "__main__":
         updating they will be found later '''
     if(args.pc):
         for index, id in enumerate(args.pc):
-            if(DB_Calls.game_exists(
-                    cur, DB_Tables.PC_WISHLIST.value, PC, id)):
+            if(DB_Calls.game_exists(cur, DB_Tables.PC_WISHLIST.value, id=id)):
                 del args.pc[index]
     else:
         args.pc = []
     if(args.ps):
         for index, url in enumerate(args.ps):
             if(DB_Calls.game_exists(
-                    cur, DB_Tables.PS_WISHLIST.value, PS, url)):
+               cur, DB_Tables.PS_WISHLIST.value, url=url)):
                 del args.ps[index]
     else:
         args.ps = []
@@ -142,13 +148,15 @@ if __name__ == "__main__":
     ''' If we did not pass the -r option then check for updates '''
     if(not args.rofi):
         ''' update the top games '''
-        update_top_games(cur, DB_Tables.TOP_PC.value,
-                         PC, CUSTOM_UPDATE_DELAY, PC_UPPER_PRICE)
-        update_top_games(cur, DB_Tables.TOP_PS.value,
-                         PS, CUSTOM_UPDATE_DELAY)
+        update_top_games(cur, DB_Tables.TOP_PC.value, PC, CUSTOM_UPDATE_DELAY,
+                         PC_UPPER_PRICE)
+        update_top_games(
+            cur, DB_Tables.TOP_PS.value, PS, CUSTOM_UPDATE_DELAY)
         ''' update wishlist games '''
-        update_wishlist_games(cur, DB_Tables.PC_WISHLIST.value, args.pc)
-        update_wishlist_games(cur, DB_Tables.PS_WISHLIST.value, args.ps)
+        update_wishlist_games(
+            cur, DB_Tables.PC_WISHLIST.value, args.pc, CUSTOM_UPDATE_DELAY)
+        update_wishlist_games(
+            cur, DB_Tables.PS_WISHLIST.value, args.ps, CUSTOM_UPDATE_DELAY)
 
     ''' Get games from the database '''
     pc_wishlist_games = DB_Calls.get_data(cur, DB_Tables.PC_WISHLIST.value)

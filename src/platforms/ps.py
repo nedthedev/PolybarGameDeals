@@ -5,6 +5,8 @@
   psdeals.net
 '''
 
+from src.utils.db_enums import DB_Tables
+from src.utils.db_calls import DB_Calls
 import time
 import re
 from bs4 import BeautifulSoup
@@ -28,11 +30,15 @@ class PS:
     ############################
     '''   "PUBLIC" METHODS   '''
     ############################
-    ''' Fetches the top deals pages, scrapes them, and gathers the relevant
-        data '''
     @staticmethod
     def get_top_deals(upper_price=None):
-        ''' set the number of pages to fetch '''
+        """Fetches and scrapes the top deals.
+
+        :param upper_price: useless, defaults to None
+        :type upper_price:  *, optional
+        :return:            a list of dictionaries representing games
+        :rtype:             list
+        """
         parsed_data = []
         for _page in range(1, PS._TOP_DEALS_PAGES+1):
             if(_page == PS._TOP_DEALS_PAGES):
@@ -57,9 +63,51 @@ class PS:
             joined_list += list_
         return joined_list
 
-    ''' Get all of your top deals '''
+    @staticmethod
+    def get_wishlist_deals(cur, urls):
+        """Fetches and scrapes wishlist deals.
+
+        :param cur:  database cursor
+        :type cur:   Cursor
+        :param urls: a list of wishlist games' urls
+        :type urls:  list
+        :return:     list of games to update and list of games to add
+        :rtype:      list, list or None, None
+        """
+        new_games = []
+        games_to_update = []
+        for index, url in enumerate(urls):
+            if(PS.is_valid(url)):
+                gid = PS.get_gid(url)
+                ''' If the game already exists in the database then we need
+                    only update '''
+                if(DB_Calls.game_exists(
+                   cur, DB_Tables.PS_WISHLIST.value, gid)):
+                    games_to_update.append(gid)
+                ''' We must fetch the data for every game, because every game
+                    provided needs updating '''
+                if(index == len(urls)-1):
+                    sleep = False
+                else:
+                    sleep = True
+                game = PS.get_your_deals(url, sleep)
+                if(game):
+                    new_games.append(game)
+        if(new_games):
+            return games_to_update, new_games
+        return None, None
+
     @staticmethod
     def get_your_deals(url, sleep=True):
+        """Fetch and parse game at the url.
+
+        :param url:   the url of the game to parse
+        :type url:    str
+        :param sleep: whether or not to sleep after request, defaults to True
+        :type sleep:  bool, optional
+        :return:      dictionary representing game from the url
+        :rtype:       dict
+        """
         ''' Make the request to download the pages '''
         game = PS._make_request(url, sleep)
 
@@ -69,43 +117,79 @@ class PS:
         else:
             return None
 
-    ''' A utility method to return the class variable _PS_PLUS_PRICE '''
     @staticmethod
     def ps_plus_price():
+        """Just a getter for the _PS_PLUS_PRICE variable
+
+        :return: class variable _PS_PLUS_PRICE
+        :rtype: str
+        """
         return float(PS._PS_PLUS_PRICE)
 
-    ''' Check the the url matches the proper url regex '''
     @staticmethod
     def is_valid(url):
+        """Check the url matches the proper url regex.
+
+        :param url: the url to check validity of
+        :type url:  str
+        :return:    boolean whether or not it's a valid url
+        :rtype:     bool
+        """
         return re.search(fr"^{PS._PS_DEALS_URL}/..-store/game/\d+/.*", url)
 
-    ''' Split the gid out of the url '''
     @staticmethod
     def get_gid(url):
+        """Split game id out of the url.
+
+        :param url: the url to get game id out of
+        :type url:  str
+        :return:    the game id, if invalid then None
+        :rtype:     str or None
+        """
         try:
             return url.split("game/")[1].split("/")[0]
         except Exception:
             return None
 
-    ''' Return the url to search for game '''
     @staticmethod
     def search_url(game_name):
+        """Return the url to search for the game_name.
+
+        :param game_name: the name of the game to search
+        :type game_name:  str
+        :return:          the url to use to search for the game
+        :rtype:           str
+        """
         return f"{PS._GAME_LOOKUP_URL}{game_name}"
 
     #############################
     '''   "PRIVATE" METHODS   '''
     #############################
-    ''' Makes a request for the provided url '''
     @staticmethod
     def _make_request(url, sleep=True):
+        """Makes a request for the provided url.
+
+        :param url:   the url to make a request for
+        :type url:    str
+        :param sleep: whether or not to sleep after request, defaults to True
+        :type sleep:  bool, optional
+        :return:      request result
+        :rtype:       request
+        """
         r = make_request_(url)
         if(r and sleep):
             time.sleep(PS._SLEEP_DURATION)
         return r
 
-    ''' The deal page scraper and data parser '''
     @staticmethod
     def _parse_top_deals(data):
+        """The deal page scraper and data parser.
+
+        :param data: the data from the web page to scrape
+        :type data:  request.text
+        :return:     a list of dictionaries representing games
+        :rtype:      list
+        """
         html = BeautifulSoup(data, "html.parser")
         games = html.find_all("div", "game-collection-item-col")
         parsed_data = []
@@ -168,10 +252,17 @@ class PS:
                                   ps_deals_url))
         return parsed_data
 
-    ''' Individual game pages have different html than top pages, so we must
-        scrape these differently '''
     @staticmethod
     def _parse_your_deals(data, url):
+        """Scrape the wishlist game data from the page.
+
+        :param data: the data to be parsed
+        :type data:  request.text
+        :param url:  the url that the data is from
+        :type url:   str
+        :return:     a dictionary representing the game
+        :rtype:      dict
+        """
         html = BeautifulSoup(data, "html.parser")
         title = html.find("div", {"class": ["game-title-info-name"]})
         if(title):

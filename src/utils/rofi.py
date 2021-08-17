@@ -36,10 +36,20 @@ class WishlistGameOptions(Enum):
 ############################
 '''   "PUBLIC" METHODS   '''
 ############################
-''' The main rofi logic loop wrapped in a function '''
 
 
 def launch_rofi(cur, games, title_lengths):
+    """The main rofi logic loop wrapped in a function.
+
+    :param cur:           database cursor
+    :type cur:            Cursor
+    :param games:         a dictionary with a list for each game platform,
+                          each list containing tuples representing each game
+    :type games: dict
+    :param title_lengths: a dictionary with a value for each game platform
+                          representing the longest game title
+    :type title_lengths:  dict
+    """
     while(True):
         category = _choose_option(Categories)
         if(category):
@@ -110,13 +120,19 @@ def launch_rofi(cur, games, title_lengths):
 #############################
 '''   "PRIVATE" METHODS   '''
 #############################
-''' Rofi window to select what platform of games to browse '''
 
 
-def _choose_option(Options):
+def _choose_option(_options):
+    """Rofi window to select what category of games you want to browse.
+
+    :param options: the options to show to the user
+    :type options:  enum
+    :return:        the chosen category or None if nothing is chosen
+    :rtype:         str or None
+    """
     options = ""
     rows = 0
-    for val in Options:
+    for val in _options:
         options += val.value
         rows += 1
     category = subprocess.run(["/usr/bin/rofi", "-dmenu", "-p", "", "-lines",
@@ -129,10 +145,18 @@ def _choose_option(Options):
         return category.stdout.decode("UTF-8")
 
 
-''' Rofi window to select the game you want to see more about '''
-
-
 def _choose_game(category, games, title_lengths):
+    """Rofi window to select the game you want to see more about.
+
+    :param category:      the category you have chosen
+    :type category:       str
+    :param games:         dictionary with list of each category's games
+    :type games:          dict
+    :param title_lengths: dictionary with each category's longest title
+    :type title_lengths:  dict
+    :return:              the chosen game
+    :rtype:               str
+    """
     _GO_UP = ""
     _ADDON = 18
 
@@ -176,10 +200,14 @@ def _choose_game(category, games, title_lengths):
     return chosen_game, _table
 
 
-''' Rofi window confirming whether or not you want to open the link '''
-
-
 def _get_input(prompt):
+    """A rofi prompt to get user input.
+
+    :param prompt: the string that represent's what to prompt for
+    :type prompt:  str
+    :return:       the string that was entered or None if nothing entered
+    :rtype:        str or None
+    """
     choice = subprocess.run(["/usr/bin/rofi", "-dmenu", "-p",
                             f"{prompt}", "-lines", "2", "-columns", "1"],
                             stdout=subprocess.PIPE, shell=False)
@@ -189,10 +217,14 @@ def _get_input(prompt):
         return None
 
 
-''' Rofi window confirming whether or not you want to open the link '''
-
-
 def _confirmed(prompt):
+    """Rofi window confirming whether or not you want to open the link.
+
+    :param prompt: the prompt that you want to get confirmation for
+    :type prompt:  str
+    :return:       True if you chose Yes, False otherwise
+    :rtype:        bool
+    """
     yes = "Yes\n"
     no = "No\n"
     choice = subprocess.run(["/usr/bin/rofi", "-dmenu", "-p", f"{prompt}",
@@ -206,17 +238,27 @@ def _confirmed(prompt):
         return False
 
 
-''' Simple function to open url '''
-
-
 def _open_url(url):
+    """Opens the given url with webbrowser.
+
+    :param url: url to be opened
+    :type url: str
+    """
     webbrowser.open_new_tab(url)
 
 
-''' Format the PC game deals into nice format for rendering with rofi '''
-
-
 def _form_pc_string(rofi_string, games, longest_title):
+    """Format the PC game deals into nice format for rendering with rofi.
+
+    :param rofi_string:   the string to become the list of games
+    :type rofi_string:    str
+    :param games:         the games to add to the string
+    :type games:          list
+    :param longest_title: the longest title in this collection of games
+    :type longest_title:  int
+    :return:              the string of games to render in the rofi window
+    :rtype:               str
+    """
     for game in games:
         rofi_string += (
             f"{_stretch_string(game[DB_Indices.TITLE.value], longest_title)}"
@@ -224,10 +266,18 @@ def _form_pc_string(rofi_string, games, longest_title):
     return rofi_string
 
 
-''' Format the PS game deals into nice format for rendering with rofi '''
-
-
 def _form_ps_string(rofi_string, games, longest_title):
+    """Format the PC game deals into nice format for rendering with rofi.
+
+    :param rofi_string:   the string to become the list of games
+    :type rofi_string:    str
+    :param games:         the games to add to the string
+    :type games:          list
+    :param longest_title: the longest title in this collection of games
+    :type longest_title:  int
+    :return:              the string of games to render in the rofi window
+    :rtype:               str
+    """
     for game in games:
         if(game[DB_Indices.SALE_PRICE.value] == PS.ps_plus_price()):
             rofi_string += (
@@ -243,10 +293,16 @@ def _form_ps_string(rofi_string, games, longest_title):
     return rofi_string
 
 
-''' Stretch the game title so that each game takes equal space '''
-
-
 def _stretch_string(string, length):
+    """Stretch the game title so that each game takes equal space.
+
+    :param string: the string to stretch
+    :type string:  str
+    :param length: the length that the string needs to be stretched to
+    :type length:  int
+    :return:       the stretched string
+    :rtype:        str
+    """
     for _ in range(length-len(string)):
         string += " "
     return string

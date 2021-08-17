@@ -9,8 +9,6 @@
 from datetime import datetime, timedelta
 
 from .db_enums import DB_Indices, DB_Columns, DB_Tables
-from ..platforms.pc import PC
-from ..platforms.ps import PS
 
 
 class DB_Calls:
@@ -23,10 +21,19 @@ class DB_Calls:
     ############################
     '''   "PUBLIC" METHODS   '''
     ############################
-    ''' A simple function to fetch all the data from the given table. If the
-    table doesn't exist then it will be created. '''
     @staticmethod
     def get_data(cur, table):
+        """Get all the data from the specified table, ordering the results by
+           sale_price, cheapest to priciest.
+
+        :param cur:   database cursor
+        :type cur:    cursor
+        :param table: the table to get the data from
+        :type table:  str
+        :return:      returns all of the table's data orders by sale_price
+                      ascending
+        :rtype:       list
+        """
         try:
             cur.execute(f"""SELECT SALE_PRICE FROM {table}""")
         except Exception:
@@ -42,20 +49,32 @@ class DB_Calls:
         return cur.execute(f"""SELECT * FROM {table}
                             ORDER BY sale_price ASC""").fetchall()
 
-    ''' Add top deals to the database. Since top deals will time out and not
-        exist anymore, we need to check if games in the database need to
-        updated or removed. '''
     @staticmethod
     def add_top_deals(cur, table, existing_games, new_games):
+        """Add the top deals to the database.
+
+        :param cur:            database cursor
+        :type cur:             cursor
+        :param table:          the table to update the deals of
+        :type table:           str
+        :param existing_games: a list of games that are already in the database
+                               and therefore will be updated
+        :type existing_games:  list
+        :param new_games:      a list of games that are not already in the
+                               database and therefore will be inserted
+        :type new_games:       list
+        """
+        unmatched_titles = []
+        matched_titles = []
         ''' When adding top deals, we need to remove the games that are no
             longer a "top deal" '''
-        unmatched_titles = []
         for existing_game in existing_games:
             matched = False
             for new_game in new_games:
-                if(existing_game[DB_Indices.TITLE.value] ==
-                   new_game[DB_Columns.TITLE.value]):
+                if(existing_game[DB_Indices.GID.value] ==
+                   new_game[DB_Columns.GID.value]):
                     matched = True
+                    matched_titles.append(existing_game[DB_Indices.GID.value])
                     break
             if(not matched):
                 ''' append it to the list of titles that we will delete '''
@@ -67,52 +86,99 @@ class DB_Calls:
 
         ''' Update the remainder of the games that are already present, add the
         games that are new entries to the database. '''
-        for game in new_games:
-            if(cur.execute(f"""SELECT * FROM {table} WHERE TITLE=?""",
-               (game[DB_Columns.TITLE.value], )).fetchone()):
-                cur.execute(f"""UPDATE {table} SET
-                            sale_price=?,
-                            url=?,
-                            update_time=?
-                            WHERE TITLE=?""",
-                            (game[DB_Columns.SALE_PRICE.value],
-                                game[DB_Columns.URL.value],
-                                datetime.now(),
-                                game[DB_Columns.TITLE.value]))
-            else:
-                cur.execute(f"""INSERT INTO {table} VALUES(
-                                ?, ?, ?, ?, ?, ?, ?, ?)""",
-                            (game[DB_Columns.TITLE.value],
-                                game[DB_Columns.FULL_PRICE.value],
-                                game[DB_Columns.SALE_PRICE.value],
-                                game[DB_Columns.COVER_IMAGE.value],
-                                game[DB_Columns.URL.value],
-                                game[DB_Columns.GID.value],
-                                datetime.now(),
-                                len(game[DB_Columns.TITLE.value])))
+        DB_Calls.add_games(cur, table, new_games, matched_titles)
 
     @staticmethod
-    def game_exists(cur, table, cls, id):
-        if(cls.is_valid(id)):
+    def add_games(cur, table, games, games_to_update=None):
+        """Get all the data from the specified table, ordering the results by
+           sale_price, cheapest to priciest.
+
+        :param cur:   database cursor
+        :type cur:    cursor
+        :param table: the table to get the data from
+        :type table:  str
+        :return:      returns all of the table's data orders by sale_price
+                      ascending
+        :rtype:       list
+        """
+        if(games_to_update is None):
+            for game in games:
+                if(cur.execute(f"""SELECT * FROM {table} WHERE GID=?""",
+                   (game[DB_Columns.GID.value], )).fetchone()):
+                    DB_Calls._update_game(cur, table, game)
+                else:
+                    DB_Calls._add_game(cur, table, game)
+        else:
+            for game in games:
+                if(game[DB_Columns.GID.value] in games_to_update):
+                    DB_Calls._update_game(cur, table, game)
+                else:
+                    DB_Calls._add_game(cur, table, game)
+
+    @staticmethod
+    def game_exists(cur, table, id=None, url=None):
+        """Determines if a game with the given id is in the database.
+
+        :param cur:   database cursor
+        :type cur:    cursor
+        :param table: the table to check game id for
+        :type table:  str
+        :param id:    the id to search table for
+        :type id:     int
+        :return: [description]
+        :rtype: [type]
+        """
+        if(url):
             if(cur.execute(f"""SELECT * FROM {table}
-                            WHERE gid=? OR url=?""", (id, id)).fetchone()):
+                            WHERE url=?""", (url, )).fetchone()):
+                return True
+        elif(id):
+            if(cur.execute(f"""SELECT * FROM {table}
+                            WHERE gid=?""", (id, )).fetchone()):
                 return True
         return False
 
-    ''' Delete game with given title from the database '''
     @staticmethod
     def delete_game_with_title(cur, table, title):
+        """Delete game with given title from the database.
+
+        :param cur:   database cursor
+        :type cur:    cursor
+        :param table: the table to delete the title from
+        :type table:  str
+        :param title: the title of the game to delete
+        :type title:  str
+        """
         cur.execute(f"""DELETE FROM {table} WHERE TITLE=?""", (title, ))
 
     @staticmethod
     def delete_game_with_id(cur, table, id):
+        """Delete game with given id from the database.
+
+        :param cur:   database cursor
+        :type cur:    cursor
+        :param table: the table to delete the id from
+        :type table:  str
+        :param id:    the id to delete from the table
+        :type id:     int
+        """
         cur.execute(f"""DELETE FROM {table} WHERE gid=?""", (id, ))
 
-    ''' Delete game with given title from the database and the list of games
-        This function is used exclusively to delete games through the rofi
-        prompt '''
     @staticmethod
     def delete_game_now(cur, table, title, games):
+        """Delete game with given title from database and games list.
+
+        :param cur:   database cursor
+        :type cur:    cursor
+        :param table: the table to delete game from
+        :type table:  str
+        :param title: the title of the game to delete
+        :type title:  str
+        :param games: the games list holding the title
+        :type games:  list
+        :return:      the list of games without the now removed game
+        :rtype:       list
+        """
         for index, game in enumerate(games[table]):
             if(game[DB_Indices.TITLE.value] == title):
                 del games[table][index]
@@ -120,106 +186,20 @@ class DB_Calls:
                 break
         return games
 
-    ''' Called when wanting to add new wishlist PC games '''
-    @staticmethod
-    def add_pc_games(cur, table, ids):
-        time = datetime.now()
-        id_string = ""
-        update_ids = []
-        for index, id in enumerate(ids):
-            if(PC.is_valid(id)):
-                ''' Form the valid string of ids for fetching data from api
-                    with one request '''
-                if(not index == len(ids)-1):
-                    id_string += f"{id},"
-                else:
-                    id_string += f"{id}"
-                ''' If it is in the database then we will update '''
-                if(cur.execute(f"""SELECT update_time FROM {table}
-                               WHERE gid=?""", (id, )).fetchone()):
-                    update_ids.append(id)
-        games = PC.get_wishlist_games(id_string)
-        if(games):
-            for game in games:
-                ''' If it is a game that we needed to update '''
-                if(game[DB_Columns.GID.value] in update_ids):
-                    cur.execute(f"""UPDATE {table} SET
-                                full_price=?,
-                                sale_price=?,
-                                url=?,
-                                update_time=?
-                                WHERE gid=?""",
-                                (game[DB_Columns.FULL_PRICE.value],
-                                    game[DB_Columns.SALE_PRICE.value],
-                                    game[DB_Columns.URL.value],
-                                    time,
-                                    game[DB_Columns.GID.value]))
-                else:
-                    cur.execute(f"""INSERT INTO {table}
-                                VALUES(?, ?, ?, ?, ?, ?, ?, ?)""",
-                                (game[DB_Columns.TITLE.value],
-                                    game[DB_Columns.FULL_PRICE.value],
-                                    game[DB_Columns.SALE_PRICE.value],
-                                    game[DB_Columns.COVER_IMAGE.value],
-                                    game[DB_Columns.URL.value],
-                                    game[DB_Columns.GID.value],
-                                    time,
-                                    len(game[DB_Columns.TITLE.value])))
-        return games
-
-    ''' Called when wanting to add new wishlist Playstation games '''
-    @staticmethod
-    def add_ps_games(cur, table, urls):
-        time = datetime.now()
-        games = []
-        existing_games = []
-        for index, url in enumerate(urls):
-            if(PS.is_valid(url)):
-                gid = PS.get_gid(url)
-                ''' If the game already exists in the database then we need
-                    only update '''
-                if(cur.execute(f"""SELECT url, update_time FROM {table}
-                               WHERE URL=? OR GID=?""", (url, gid)
-                               ).fetchone()):
-                    existing_games.append(gid)
-                ''' We must fetch the data for every game, because every game
-                    provided needs updating '''
-                if(index == len(urls)-1):
-                    sleep = False
-                else:
-                    sleep = True
-                game = PS.get_your_deals(url, sleep)
-                if(game):
-                    games.append(game)
-        if(games):
-            for game in games:
-                ''' If it is a game that we needed to update '''
-                if(game[DB_Columns.GID.value] in existing_games):
-                    cur.execute(f"""UPDATE {table} SET
-                                full_price=?,
-                                sale_price=?,
-                                update_time=?
-                                WHERE GID=?""",
-                                (game[DB_Columns.FULL_PRICE.value],
-                                    game[DB_Columns.SALE_PRICE.value],
-                                    time,
-                                    game[DB_Columns.GID.value]))
-                else:
-                    cur.execute(f"""INSERT INTO {table}
-                                VALUES(?, ?, ?, ?, ?, ?, ?, ?)""",
-                                (game[DB_Columns.TITLE.value],
-                                    game[DB_Columns.FULL_PRICE.value],
-                                    game[DB_Columns.SALE_PRICE.value],
-                                    game[DB_Columns.COVER_IMAGE.value],
-                                    game[DB_Columns.URL.value],
-                                    game[DB_Columns.GID.value],
-                                    time,
-                                    len(game[DB_Columns.TITLE.value])))
-        return games
-
     ''' Fetch a game's url given the title and table of the game '''
     @staticmethod
     def get_game_url(cur, table, title):
+        """Fetch a game's url given the title and table of the game.
+
+        :param cur:   database cursor
+        :type cur:    cursor
+        :param table: the table to search
+        :type table:  str
+        :param title: the title of the game to get url from
+        :type title:  str
+        :return:      the url of the game if the title exists, otherwise None
+        :rtype:       str or None
+        """
         url = cur.execute(
             f"""SELECT url FROM {table} WHERE TITLE=?""",
             (title, )).fetchone()
@@ -227,9 +207,18 @@ class DB_Calls:
             return url[0]
         return None
 
-    ''' Simple function to get the longest title from the given table '''
     @staticmethod
     def get_longest_title(cur, table):
+        """Get the longest title from the given table, used for formatting the
+           games for rendering in the rofi window.
+
+        :param cur:   database cursor
+        :type cur:    cursor
+        :param table: the table to get longest title from
+        :type table:  str
+        :return:      the longest title from the table
+        :rtype:       int
+        """
         length = cur.execute(
             f"""SELECT title_length FROM {table}
             ORDER BY title_length DESC""").fetchone()
@@ -238,11 +227,20 @@ class DB_Calls:
         else:
             return 10
 
-    ''' Determine if the top deals need to be updated based on update_delay.
-        The function first checks to see if an entry even exists, if one does
-        then it will check the elapsed time. '''
     @staticmethod
     def needs_updating(cur, table, update_delay=None):
+        """Determines if the table needs updating, depends on the value of
+           update_delay otherwise it uses the default update_delay.
+
+        :param cur:          database cursor
+        :type cur:           cursor
+        :param table:        the table to check
+        :type table:         str
+        :param update_delay: the time that must pass before needing to update
+        :type date_str:      datetime
+        :return:             True if it needs updating, False otherwise
+        :rtype:              bool
+        """
         try:
             past_time = DB_Calls._str_to_dt(cur.execute(
                 f"""SELECT update_time FROM {table}""").fetchone()[0])
@@ -252,9 +250,19 @@ class DB_Calls:
             update_delay = DB_Calls._UPDATE_DELAY
         return ((datetime.now() - past_time) > update_delay)
 
-    ''' Checks and finds all PC wishlist games that need updating '''
     @staticmethod
     def wishlist_needs_updating(cur, table, update_delay=None):
+        """Determines which individual games from the table need updating.
+
+        :param cur:          database cursor
+        :type cur:           cursor
+        :param table:        the table to check
+        :type table:         str
+        :param update_delay: the time that must pass before needing to update
+        :type date_str:      datetime
+        :return:             True if it needs updating, False otherwise
+        :rtype:              bool
+        """
         if(not update_delay):
             update_delay = DB_Calls._UPDATE_DELAY
         if(table == DB_Tables.PC_WISHLIST.value):
@@ -278,7 +286,58 @@ class DB_Calls:
     #############################
     '''   "PRIVATE" METHODS   '''
     #############################
-    ''' Convert a date string into a valid datetime object '''
     @staticmethod
     def _str_to_dt(date_str):
+        """Convert a date string into a valid datetime object.
+
+        :param date_str: a string representation of datetime to convert
+        :type date_str:  str
+        :return:         a datetime object
+        :rtype:          datetime
+        """
         return datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S.%f")
+
+    @staticmethod
+    def _add_game(cur, table, game):
+        """Add the game to the given table.
+
+        :param cur:   database cursor
+        :type cur:    cursor
+        :param table: the table to add the game to
+        :type table:  str
+        :param game:  the game dictionary to add to the table
+        :type game:   dict
+        """
+        cur.execute(f"""INSERT INTO {table} VALUES(
+                    ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    (game[DB_Columns.TITLE.value],
+                        game[DB_Columns.FULL_PRICE.value],
+                        game[DB_Columns.SALE_PRICE.value],
+                        game[DB_Columns.COVER_IMAGE.value],
+                        game[DB_Columns.URL.value],
+                        game[DB_Columns.GID.value],
+                        datetime.now(),
+                        len(game[DB_Columns.TITLE.value])))
+
+    @staticmethod
+    def _update_game(cur, table, game):
+        """Update the game in the given table.
+
+        :param cur:   database cursor
+        :type cur:    cursor
+        :param table: the table to update the game in
+        :type table:  str
+        :param game:  the game dictionary to update in the table
+        :type game:   dict
+        """
+        cur.execute(f"""UPDATE {table} SET
+                    full_price=?,
+                    sale_price=?,
+                    url=?,
+                    update_time=?
+                    WHERE GID=?""",
+                    (game[DB_Columns.FULL_PRICE.value],
+                        game[DB_Columns.SALE_PRICE.value],
+                        game[DB_Columns.URL.value],
+                        datetime.now(),
+                        game[DB_Columns.GID.value]))

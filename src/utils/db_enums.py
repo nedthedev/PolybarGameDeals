@@ -1,5 +1,10 @@
 #!/usr/bin/python3
 
+'''
+    This file is a collection of enums used for easier access to data and
+    database queries
+'''
+
 from enum import Enum
 
 
