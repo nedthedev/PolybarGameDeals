@@ -9,7 +9,7 @@ import requests
 from ..utils.db_enums import DB_Columns
 
 
-def create_game_dictionary(title, full_price, sale_price, cover_image, gid, 
+def create_game_dictionary(title, full_price, sale_price, cover_image, gid,
                            url):
     """Creates and returns a dictionary for the game.
 
