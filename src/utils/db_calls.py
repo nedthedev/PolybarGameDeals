@@ -186,7 +186,6 @@ class DB_Calls:
                 break
         return games
 
-    ''' Fetch a game's url given the title and table of the game '''
     @staticmethod
     def get_game_url(cur, table, title):
         """Fetch a game's url given the title and table of the game.
