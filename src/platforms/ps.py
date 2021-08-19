@@ -5,13 +5,13 @@
   psdeals.net
 '''
 
-from src.utils.db_enums import DB_Tables
-from src.utils.db_calls import DB_Calls
 import time
 import re
 from bs4 import BeautifulSoup
 
-from .shared import create_game_dictionary, make_request_
+from src.utils.db_enums import DB_Tables
+from src.utils.db_calls import DB_Calls
+from src.platforms.shared import create_game_dictionary, make_request_
 
 
 class PS:

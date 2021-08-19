@@ -6,6 +6,7 @@ This script provides an all-in-one place for PC and Playstation deals. I built t
   - A browser
   - Python 3
     - beautifulsoup4
+    - requests
 
 ## Data Sources
   - PC Deals: [cheapshark.com](https://www.cheapshark.com/) (API)

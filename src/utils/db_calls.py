@@ -8,7 +8,7 @@
 
 from datetime import datetime, timedelta
 
-from .db_enums import DB_Indices, DB_Columns, DB_Tables
+from src.utils.db_enums import DB_Indices, DB_Columns, DB_Tables
 
 
 class DB_Calls:
@@ -35,19 +35,20 @@ class DB_Calls:
         :rtype:       list
         """
         try:
-            cur.execute(f"""SELECT SALE_PRICE FROM {table}""")
+            cur.execute(f"""SELECT {DB_Columns.SALE_PRICE.value} FROM
+                         {table}""")
         except Exception:
             cur.execute(f"""CREATE TABLE {table}(
-                title TEXT NOT NULL UNIQUE,
-                full_price REAL,
-                sale_price REAL,
-                cover_image TEXT,
-                url TEXT NOT NULL UNIQUE,
-                gid INTEGER UNIQUE,
-                update_time TEXT,
-                title_length INTEGER)""")
-        return cur.execute(f"""SELECT * FROM {table}
-                            ORDER BY sale_price ASC""").fetchall()
+                {DB_Columns.TITLE.value} TEXT NOT NULL UNIQUE,
+                {DB_Columns.FULL_PRICE.value} REAL,
+                {DB_Columns.SALE_PRICE.value} REAL,
+                {DB_Columns.COVER_IMAGE.value} TEXT,
+                {DB_Columns.URL.value} TEXT NOT NULL UNIQUE,
+                {DB_Columns.GID.value} INTEGER UNIQUE,
+                {DB_Columns.UPDATE_TIME.value} TEXT,
+                {DB_Columns.TITLE_LENGTH.value} INTEGER)""")
+        return cur.execute(f"""SELECT * FROM {table} ORDER BY
+                            {DB_Columns.SALE_PRICE.value} ASC""").fetchall()
 
     @staticmethod
     def add_top_deals(cur, table, existing_games, new_games):
@@ -103,7 +104,8 @@ class DB_Calls:
         """
         if(games_to_update is None):
             for game in games:
-                if(cur.execute(f"""SELECT * FROM {table} WHERE GID=?""",
+                if(cur.execute(f"""SELECT * FROM {table} WHERE
+                                {DB_Columns.GID.value}=?""",
                    (game[DB_Columns.GID.value], )).fetchone()):
                     DB_Calls._update_game(cur, table, game)
                 else:
@@ -129,12 +131,12 @@ class DB_Calls:
         :rtype: [type]
         """
         if(url):
-            if(cur.execute(f"""SELECT * FROM {table}
-                            WHERE url=?""", (url, )).fetchone()):
+            if(cur.execute(f"""SELECT * FROM {table} WHERE
+                            {DB_Columns.URL.value}=?""", (url, )).fetchone()):
                 return True
         elif(id):
-            if(cur.execute(f"""SELECT * FROM {table}
-                            WHERE gid=?""", (id, )).fetchone()):
+            if(cur.execute(f"""SELECT * FROM {table} WHERE
+                            {DB_Columns.GID.value}=?""", (id, )).fetchone()):
                 return True
         return False
 
@@ -149,7 +151,8 @@ class DB_Calls:
         :param title: the title of the game to delete
         :type title:  str
         """
-        cur.execute(f"""DELETE FROM {table} WHERE TITLE=?""", (title, ))
+        cur.execute(f"""DELETE FROM {table} WHERE
+                     {DB_Columns.TITLE.value}=?""", (title, ))
 
     @staticmethod
     def delete_game_with_id(cur, table, id):
@@ -162,7 +165,8 @@ class DB_Calls:
         :param id:    the id to delete from the table
         :type id:     int
         """
-        cur.execute(f"""DELETE FROM {table} WHERE gid=?""", (id, ))
+        cur.execute(f"""DELETE FROM {table} WHERE
+                     {DB_Columns.GID.value}=?""", (id, ))
 
     @staticmethod
     def delete_game_now(cur, table, title, games):
@@ -199,9 +203,8 @@ class DB_Calls:
         :return:      the url of the game if the title exists, otherwise None
         :rtype:       str or None
         """
-        url = cur.execute(
-            f"""SELECT url FROM {table} WHERE TITLE=?""",
-            (title, )).fetchone()
+        url = cur.execute(f"""SELECT {DB_Columns.URL.value} FROM {table} WHERE
+                           {DB_Columns.TITLE.value}=?""", (title, )).fetchone()
         if(url):
             return url[0]
         return None
@@ -219,8 +222,8 @@ class DB_Calls:
         :rtype:       int
         """
         length = cur.execute(
-            f"""SELECT title_length FROM {table}
-            ORDER BY title_length DESC""").fetchone()
+            f"""SELECT {DB_Columns.TITLE_LENGTH.value} FROM {table} ORDER BY
+             {DB_Columns.TITLE_LENGTH.value} DESC""").fetchone()
         if(length):
             return length[0]
         else:
@@ -242,7 +245,8 @@ class DB_Calls:
         """
         try:
             past_time = DB_Calls._str_to_dt(cur.execute(
-                f"""SELECT update_time FROM {table}""").fetchone()[0])
+                f"""SELECT {DB_Columns.UPDATE_TIME.value} FROM
+                    {table}""").fetchone()[0])
         except Exception:
             return True
         if(not update_delay):
@@ -267,13 +271,17 @@ class DB_Calls:
         if(table == DB_Tables.PC_WISHLIST.value):
             try:
                 games = cur.execute(
-                    """SELECT gid, update_time FROM PC_WISHLIST""").fetchall()
+                    f"""SELECT {DB_Columns.GID.value},
+                        {DB_Columns.UPDATE_TIME.value} FROM
+                        {table}""").fetchall()
             except Exception:
                 return []
         elif(table == DB_Tables.PS_WISHLIST.value):
             try:
                 games = cur.execute(
-                    """SELECT url, update_time FROM PS_WISHLIST""").fetchall()
+                    f"""SELECT {DB_Columns.URL.value},
+                        {DB_Columns.UPDATE_TIME.value} FROM
+                        {table}""").fetchall()
             except Exception:
                 return []
         games_to_update = []
@@ -330,11 +338,11 @@ class DB_Calls:
         :type game:   dict
         """
         cur.execute(f"""UPDATE {table} SET
-                    full_price=?,
-                    sale_price=?,
-                    url=?,
-                    update_time=?
-                    WHERE GID=?""",
+                    {DB_Columns.FULL_PRICE.value}=?,
+                    {DB_Columns.SALE_PRICE.value}=?,
+                    {DB_Columns.URL.value}=?,
+                    {DB_Columns.UPDATE_TIME.value}=?
+                    WHERE {DB_Columns.GID.value}=?""",
                     (game[DB_Columns.FULL_PRICE.value],
                         game[DB_Columns.SALE_PRICE.value],
                         game[DB_Columns.URL.value],

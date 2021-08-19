@@ -7,10 +7,10 @@
 
 import re
 from enum import Enum
-from src.utils.db_calls import DB_Calls
 
-from ..utils.db_enums import DB_Columns, DB_Tables
-from .shared import create_game_dictionary, make_request_
+from src.utils.db_calls import DB_Calls
+from src.utils.db_enums import DB_Columns, DB_Tables
+from src.platforms.shared import create_game_dictionary, make_request_
 
 
 class Top_Deals_Indices(Enum):

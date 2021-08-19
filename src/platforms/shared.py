@@ -6,7 +6,7 @@
 
 import requests
 
-from ..utils.db_enums import DB_Columns
+from src.utils.db_enums import DB_Columns
 
 
 def create_game_dictionary(title, full_price, sale_price, cover_image, gid,

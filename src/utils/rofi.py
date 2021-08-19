@@ -8,10 +8,10 @@ from enum import Enum
 import subprocess
 import webbrowser
 
-from .db_calls import DB_Calls
-from .db_enums import DB_Tables, DB_Indices
-from ..platforms.ps import PS
-from ..platforms.pc import PC
+from src.utils.db_calls import DB_Calls
+from src.utils.db_enums import DB_Tables, DB_Indices
+from src.platforms.ps import PS
+from src.platforms.pc import PC
 
 
 class Categories(Enum):
@@ -31,11 +31,6 @@ class WishlistGameOptions(Enum):
     # ADD_GAME = "Add Game\n"
     SEARCH_GAME = "Search Game\n"
     DELETE_GAME = "Delete Game\n"
-
-
-############################
-'''   "PUBLIC" METHODS   '''
-############################
 
 
 def launch_rofi(cur, games, title_lengths):
@@ -115,11 +110,6 @@ def launch_rofi(cur, games, title_lengths):
                 break
         else:
             break
-
-
-#############################
-'''   "PRIVATE" METHODS   '''
-#############################
 
 
 def _choose_option(_options):
