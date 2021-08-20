@@ -150,13 +150,12 @@ if __name__ == "__main__":
         ''' update the top games '''
         update_top_games(cur, DB_Tables.TOP_PC.value, PC, CUSTOM_UPDATE_DELAY,
                          PC_UPPER_PRICE)
-        update_top_games(
-            cur, DB_Tables.TOP_PS.value, PS, CUSTOM_UPDATE_DELAY)
+        update_top_games(cur, DB_Tables.TOP_PS.value, PS, CUSTOM_UPDATE_DELAY)
         ''' update wishlist games '''
-        update_wishlist_games(
-            cur, DB_Tables.PC_WISHLIST.value, args.pc, CUSTOM_UPDATE_DELAY)
-        update_wishlist_games(
-            cur, DB_Tables.PS_WISHLIST.value, args.ps, CUSTOM_UPDATE_DELAY)
+        update_wishlist_games(cur, DB_Tables.PC_WISHLIST.value, args.pc,
+                              CUSTOM_UPDATE_DELAY)
+        update_wishlist_games(cur, DB_Tables.PS_WISHLIST.value, args.ps,
+                              CUSTOM_UPDATE_DELAY)
 
     ''' Get games from the database '''
     pc_wishlist_games = DB_Calls.get_data(cur, DB_Tables.PC_WISHLIST.value)
