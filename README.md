@@ -14,7 +14,11 @@ This script provides an all-in-one place for PC and Playstation deals. I built t
 ## How it works
 All deals are stored in a SQLite database. Data requests are only made if a certain amount of time has passed since the last request. This delay makes the program run faster and is also important because PSDeals doesn't offer an API, so excessive requests to their servers should be avoided.
 
-To run it, just download or clone this repository, go to the project's location in a terminal, make sure main.[]()py is executable and run it with:
+To run it, just download or clone this repository, go to the project's location in a terminal and run:
+```bash 
+pip install -r requirements.txt
+```
+Then make sure main.[]()py is executable and run it with:
 ```bash
 ./main.py
 ```
