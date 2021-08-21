@@ -27,15 +27,6 @@ from src.utils.db_calls import DB_Calls
 from src.utils.rofi import launch_rofi
 
 
-#####################
-'''   VARIABLES   '''
-#####################
-# The amount of time that must pass before updating the database
-CUSTOM_UPDATE_DELAY = timedelta(seconds=0, minutes=0, hours=12, days=0)
-# The maximum price for the PC deals you want to find
-PC_UPPER_PRICE = 10
-
-
 def check_args():
     """Parse command line arguments.
 
@@ -49,6 +40,9 @@ def check_args():
     parser.add_argument(
         "-s", "--silent", help="update games if necessary, pass this argument \
             if you don't want a rofi window to open", action="store_true")
+    parser.add_argument(
+        "-pc-max", "--pc-max-price",
+        help="the upper limit for PC deals. default=15", type=int, default=15)
     parser.add_argument("-ps", help="url of game from https://psdeals.net/. \
         Just search for the game you want to add, copy the url, and paste it, \
             along with all other urls, following the -ps argument",
@@ -110,7 +104,7 @@ def update_top_games(cur, table, cls, update_delay=None,
     """
     if(DB_Calls.needs_updating(cur, table, update_delay)):
         old_top = DB_Calls.get_data(cur, table)
-        new_top = cls.get_top_deals(upper_price=upper_price)
+        new_top = cls.get_top_deals(upper_price)
         if(new_top):
             DB_Calls.add_top_deals(cur, table, old_top, new_top)
 
@@ -119,6 +113,9 @@ def update_top_games(cur, table, cls, update_delay=None,
 '''   MAIN BLOCK   '''
 ######################
 if __name__ == "__main__":
+    ''' The amount of time that must pass before updating the database '''
+    CUSTOM_UPDATE_DELAY = timedelta(seconds=0, minutes=0, hours=12, days=0)
+
     ''' Move to the current directory '''
     os.chdir(os.path.dirname(__file__))
 
@@ -149,7 +146,7 @@ if __name__ == "__main__":
     if(not args.rofi):
         ''' update the top games '''
         update_top_games(cur, DB_Tables.TOP_PC.value, PC, CUSTOM_UPDATE_DELAY,
-                         PC_UPPER_PRICE)
+                         args.pc_max_price)
         update_top_games(cur, DB_Tables.TOP_PS.value, PS, CUSTOM_UPDATE_DELAY)
         ''' update wishlist games '''
         update_wishlist_games(cur, DB_Tables.PC_WISHLIST.value, args.pc,

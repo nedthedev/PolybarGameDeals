@@ -41,26 +41,21 @@ class PC:
     _TOP_DEALS_URL = f"{_BASE_URL}/api/1.0/deals?upperPrice="
     _DEAL_URL = f"{_BASE_URL}/redirect?dealID="
     _GAME_LOOKUP_URL = f"{_BASE_URL}/api/1.0/games?title="
-    _UPPER_PRICE = 10
 
     ############################
     '''   "PUBLIC" METHODS   '''
     ############################
     @staticmethod
-    def get_top_deals(upper_price=None):
+    def get_top_deals(upper_price):
         """Makes a request to get the top deals, parses them, and returns that
            data. If an upper_price is provided no deals greater than that
            amount will be discovered.
 
-        :param upper_price: the upper price limit for pc deals, defaults to
-                            None
-        :type upper_price:  float, optional
+        :param upper_price: the upper price limit for pc deals
+        :type upper_price:  float or int
         :return:            parsed data for adding to database, or None
         :rtype:             list or None
         """
-        if(not upper_price):
-            upper_price = PC._UPPER_PRICE
-
         data = PC._make_request(f"{PC._TOP_DEALS_URL}{upper_price}")
         if(data):
             return PC._parse_data(data)

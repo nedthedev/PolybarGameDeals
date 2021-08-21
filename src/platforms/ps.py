@@ -31,13 +31,13 @@ class PS:
     '''   "PUBLIC" METHODS   '''
     ############################
     @staticmethod
-    def get_top_deals(upper_price=None):
+    def get_top_deals(_):
         """Fetches and scrapes the top deals.
 
-        :param upper_price: useless, defaults to None
-        :type upper_price:  *, optional
-        :return:            a list of dictionaries representing games
-        :rtype:             list
+        :param _: useless
+        :type _:  *
+        :return:  a list of dictionaries representing games
+        :rtype:   list
         """
         parsed_data = []
         for _page in range(1, PS._TOP_DEALS_PAGES+1):

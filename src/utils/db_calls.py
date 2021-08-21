@@ -6,18 +6,12 @@
   adds to the database.
 '''
 
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from src.utils.db_enums import DB_Indices, DB_Columns, DB_Tables
 
 
 class DB_Calls:
-    #####################
-    '''   VARIABLES   '''
-    #####################
-    ''' The default delay before updating the top deals '''
-    _UPDATE_DELAY = timedelta(seconds=0, minutes=0, hours=12, days=0)
-
     ############################
     '''   "PUBLIC" METHODS   '''
     ############################
@@ -230,7 +224,7 @@ class DB_Calls:
             return 10
 
     @staticmethod
-    def needs_updating(cur, table, update_delay=None):
+    def needs_updating(cur, table, update_delay):
         """Determines if the table needs updating, depends on the value of
            update_delay otherwise it uses the default update_delay.
 
@@ -249,12 +243,10 @@ class DB_Calls:
                     {table}""").fetchone()[0])
         except Exception:
             return True
-        if(not update_delay):
-            update_delay = DB_Calls._UPDATE_DELAY
         return ((datetime.now() - past_time) > update_delay)
 
     @staticmethod
-    def wishlist_needs_updating(cur, table, update_delay=None):
+    def wishlist_needs_updating(cur, table, update_delay):
         """Determines which individual games from the table need updating.
 
         :param cur:          database cursor
@@ -266,8 +258,6 @@ class DB_Calls:
         :return:             True if it needs updating, False otherwise
         :rtype:              bool
         """
-        if(not update_delay):
-            update_delay = DB_Calls._UPDATE_DELAY
         if(table == DB_Tables.PC_WISHLIST.value):
             try:
                 games = cur.execute(
