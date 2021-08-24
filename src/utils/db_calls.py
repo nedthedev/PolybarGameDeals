@@ -217,8 +217,7 @@ class DB_Calls:
              {DB_Columns.TITLE_LENGTH.value} DESC""").fetchone()
         if(length):
             return length[0]
-        else:
-            return 10
+        return 10
 
     @staticmethod
     def needs_updating(cur, table, update_delay):

@@ -131,8 +131,9 @@ if __name__ == "__main__":
     # Remove any arguments that are already in the database. If they need
     # updating they will be found later
     if(args.pc):
-        for index, id in enumerate(args.pc):
-            if(DB_Calls.game_exists(cur, DB_Tables.PC_WISHLIST.value, id=id)):
+        for index, id_ in enumerate(args.pc):
+            if(DB_Calls.game_exists(
+               cur, DB_Tables.PC_WISHLIST.value, id_=id_)):
                 del args.pc[index]
     else:
         args.pc = []

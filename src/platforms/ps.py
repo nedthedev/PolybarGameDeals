@@ -108,8 +108,7 @@ class PS:
         # if data was retrieved then parse it, otherwise return none
         if(game):
             return PS._parse_your_deals(game.text, url)
-        else:
-            return None
+        return None
 
     @staticmethod
     def ps_plus_price():
