@@ -52,7 +52,6 @@ def make_request_(url):
         r = requests.get(url)
         if(r.status_code == 200):
             return r
-        else:
-            return None
+        return None
     except Exception:
         return None
