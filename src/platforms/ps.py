@@ -15,9 +15,6 @@ from src.platforms.shared import create_game_dictionary, make_request_
 
 
 class PS:
-    #####################
-    '''   VARIABLES   '''
-    #####################
     _PS_DEALS_URL = "https://psdeals.net"
     _TOP_DEALS_URL = (f"{_PS_DEALS_URL}/collection/" +
                       "top_rated_sale?platforms=ps4&page=")
@@ -27,9 +24,6 @@ class PS:
     _SLEEP_DURATION = 5  # the number of seconds to sleep between page requests
     _PS_PLUS_PRICE = "99.99"  # a default price for PS+ only deals
 
-    ############################
-    '''   "PUBLIC" METHODS   '''
-    ############################
     @staticmethod
     def get_top_deals(_):
         """Fetches and scrapes the top deals.
@@ -46,18 +40,18 @@ class PS:
             else:
                 sleep = True
 
-            ''' Make the request to download the pages '''
+            # Make the request to download the pages
             data = PS._make_request(f"{PS._TOP_DEALS_URL}{_page}", sleep)
 
-            ''' if data was retrieved then parse it, otherwise return none.
-          This is questionable, but I think it best to update all the data
-          at the same time... '''
+            # if data was retrieved then parse it, otherwise return none.
+            # This is questionable, but I think it best to update all the data
+            # at the same time...
             if(data):
                 parsed_data.append(PS._parse_top_deals(data.text))
             else:
                 return None
 
-        ''' Join the pages of games into one list '''
+        # Join the pages of games into one list
         joined_list = []
         for list_ in parsed_data:
             joined_list += list_
@@ -79,13 +73,13 @@ class PS:
         for index, url in enumerate(urls):
             if(PS.is_valid(url)):
                 gid = PS.get_gid(url)
-                ''' If the game already exists in the database then we need
-                    only update '''
+                # If the game already exists in the database then we need
+                # only update
                 if(DB_Calls.game_exists(
                    cur, DB_Tables.PS_WISHLIST.value, gid)):
                     games_to_update.append(gid)
-                ''' We must fetch the data for every game, because every game
-                    provided needs updating '''
+                # We must fetch the data for every game, because every game
+                # provided needs updating
                 if(index == len(urls)-1):
                     sleep = False
                 else:
@@ -108,10 +102,10 @@ class PS:
         :return:      dictionary representing game from the url
         :rtype:       dict
         """
-        ''' Make the request to download the pages '''
+        # Make the request to download the pages
         game = PS._make_request(url, sleep)
 
-        ''' if data was retrieved then parse it, otherwise return none '''
+        # if data was retrieved then parse it, otherwise return none
         if(game):
             return PS._parse_your_deals(game.text, url)
         else:
@@ -122,7 +116,7 @@ class PS:
         """Just a getter for the _PS_PLUS_PRICE variable
 
         :return: class variable _PS_PLUS_PRICE
-        :rtype: str
+        :rtype:  str
         """
         return float(PS._PS_PLUS_PRICE)
 
@@ -162,9 +156,6 @@ class PS:
         """
         return f"{PS._GAME_LOOKUP_URL}{game_name}"
 
-    #############################
-    '''   "PRIVATE" METHODS   '''
-    #############################
     @staticmethod
     def _make_request(url, sleep=True):
         """Makes a request for the provided url.
@@ -206,8 +197,7 @@ class PS:
             sale_price = game.find(
                 "span", {"class": ["game-collection-item-discount-price"]})
             if(sale_price):
-                ''' Try to convert to float, if it fails then the game is free
-                '''
+                # Try to convert to float, if it fails then the game is free
                 try:
                     sale_price = float(sale_price.text[1:])
                 except Exception:
@@ -215,8 +205,8 @@ class PS:
             else:
                 sale_price = PS._PS_PLUS_PRICE
 
-            ''' There are many different indicators of time left for the deal, so I
-          must handle whether or not it's days, hours, or doesn't exist '''
+            # There are many different indicators of time left for the deal, so
+            # I must handle whether or not it's days, hours, or doesn't exist
             days_remaining = game.find(
                 "p", {"class": ["game-collection-item-end-date"]})
             if(days_remaining):
@@ -286,7 +276,7 @@ class PS:
                 1].split(" ")[0]
 
         gid = PS.get_gid(url)
-        ''' Reaffirm the legitamacy of the url '''
+        # Reaffirm the legitamacy of the url
         if(not gid):
             return None
 

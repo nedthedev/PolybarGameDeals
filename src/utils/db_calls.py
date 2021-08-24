@@ -12,9 +12,6 @@ from src.utils.db_enums import DB_Indices, DB_Columns, DB_Tables
 
 
 class DB_Calls:
-    ############################
-    '''   "PUBLIC" METHODS   '''
-    ############################
     @staticmethod
     def get_data(cur, table):
         """Get all the data from the specified table, ordering the results by
@@ -61,8 +58,8 @@ class DB_Calls:
         """
         unmatched_titles = []
         matched_titles = []
-        ''' When adding top deals, we need to remove the games that are no
-            longer a "top deal" '''
+        # When adding top deals, we need to remove the games that are no
+        # longer a "top deal"
         for existing_game in existing_games:
             matched = False
             for new_game in new_games:
@@ -72,15 +69,15 @@ class DB_Calls:
                     matched_titles.append(existing_game[DB_Indices.GID.value])
                     break
             if(not matched):
-                ''' append it to the list of titles that we will delete '''
+                # append it to the list of titles that we will delete
                 unmatched_titles.append(existing_game[DB_Indices.TITLE.value])
 
-        ''' Delete the games that aren't found in the api response anymore '''
+        # Delete the games that aren't found in the api response anymore
         for title in unmatched_titles:
             DB_Calls.delete_game_with_title(cur, table, title)
 
-        ''' Update the remainder of the games that are already present, add the
-        games that are new entries to the database. '''
+        # Update the remainder of the games that are already present, add the
+        # games that are new entries to the database.
         DB_Calls.add_games(cur, table, new_games, matched_titles)
 
     @staticmethod
@@ -112,15 +109,15 @@ class DB_Calls:
                     DB_Calls._add_game(cur, table, game)
 
     @staticmethod
-    def game_exists(cur, table, id=None, url=None):
+    def game_exists(cur, table, id_=None, url=None):
         """Determines if a game with the given id is in the database.
 
         :param cur:   database cursor
         :type cur:    cursor
         :param table: the table to check game id for
         :type table:  str
-        :param id:    the id to search table for
-        :type id:     int
+        :param id_:    the id to search table for
+        :type id_:     int
         :return: [description]
         :rtype: [type]
         """
@@ -128,9 +125,9 @@ class DB_Calls:
             if(cur.execute(f"""SELECT * FROM {table} WHERE
                             {DB_Columns.URL.value}=?""", (url, )).fetchone()):
                 return True
-        elif(id):
+        elif(id_):
             if(cur.execute(f"""SELECT * FROM {table} WHERE
-                            {DB_Columns.GID.value}=?""", (id, )).fetchone()):
+                            {DB_Columns.GID.value}=?""", (id_, )).fetchone()):
                 return True
         return False
 
@@ -149,18 +146,18 @@ class DB_Calls:
                      {DB_Columns.TITLE.value}=?""", (title, ))
 
     @staticmethod
-    def delete_game_with_id(cur, table, id):
+    def delete_game_with_id(cur, table, id_):
         """Delete game with given id from the database.
 
         :param cur:   database cursor
         :type cur:    cursor
         :param table: the table to delete the id from
         :type table:  str
-        :param id:    the id to delete from the table
-        :type id:     int
+        :param id_:    the id to delete from the table
+        :type id_:     int
         """
         cur.execute(f"""DELETE FROM {table} WHERE
-                     {DB_Columns.GID.value}=?""", (id, ))
+                     {DB_Columns.GID.value}=?""", (id_, ))
 
     @staticmethod
     def delete_game_now(cur, table, title, games):
@@ -280,9 +277,6 @@ class DB_Calls:
                 games_to_update.append(game[0])
         return games_to_update
 
-    #############################
-    '''   "PRIVATE" METHODS   '''
-    #############################
     @staticmethod
     def _str_to_dt(date_str):
         """Convert a date string into a valid datetime object.

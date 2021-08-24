@@ -33,18 +33,12 @@ class Your_Deals_Indices(Enum):
 
 
 class PC:
-    #####################
-    '''   VARIABLES   '''
-    #####################
     _BASE_URL = "https://www.cheapshark.com"
     _YOUR_DEALS_URL = f"{_BASE_URL}/api/1.0/games?ids="
     _TOP_DEALS_URL = f"{_BASE_URL}/api/1.0/deals?upperPrice="
     _DEAL_URL = f"{_BASE_URL}/redirect?dealID="
     _GAME_LOOKUP_URL = f"{_BASE_URL}/api/1.0/games?title="
 
-    ############################
-    '''   "PUBLIC" METHODS   '''
-    ############################
     @staticmethod
     def get_top_deals(upper_price):
         """Makes a request to get the top deals, parses them, and returns that
@@ -65,40 +59,43 @@ class PC:
     def get_wishlist_deals(cur, ids):
         """Make request for the given id string.
 
-        :param id_string: a formatted string of ids for request
-        :type id_string:  str
-        :return:          parsed data for adding to database if all goes well,
-                          or None
-        :rtype:           list or None
+        :param cur: the database cursor object
+        :type cur:  cursor
+        :param ids: a formatted string of ids for request
+        :type ids:  str
+        :return:    parsed data for adding to database if all goes well,
+                    or None
+        :rtype:     list or None
         """
         id_string = ""
         update_ids = []
-        for index, id in enumerate(ids):
-            if(PC.is_valid(id)):
-                ''' Form the valid string of ids for fetching data from api
-                    with one request '''
+        for index, id_ in enumerate(ids):
+            if(PC.is_valid(id_)):
+                # Form the valid string of ids for fetching data from api
+                # with one request
                 if(not index == len(ids)-1):
-                    id_string += f"{id},"
+                    id_string += f"{id_},"
                 else:
-                    id_string += f"{id}"
-                ''' If it is in the database then we will update '''
-                if(DB_Calls.game_exists(cur, DB_Tables.PC_WISHLIST.value, id)):
-                    update_ids.append(id)
+                    id_string += f"{id_}"
+                # If it is in the database then we will update
+                if(DB_Calls.game_exists(
+                   cur, DB_Tables.PC_WISHLIST.value, id_)):
+                    update_ids.append(id_)
         data = PC._make_request(f"{PC._YOUR_DEALS_URL}{id_string}")
         if(data):
             return update_ids, PC._parse_wishlist_deals(data)
         return None, None
 
     @staticmethod
-    def is_valid(id):
+    def is_valid(id_):
         """Check the the url matches the proper url regex.
 
-        :param id:  id to test
-        :type id:   int
+        :param id_: id to test
+        :type id_:  int
         :return:    True if valid, False if invalid
         :rtype:     bool
         """
-        return re.search(r"^\d+$", str(id))
+        return re.search(r"^\d+$", str(id_))
 
     @staticmethod
     def search_url(game_name):
@@ -111,9 +108,6 @@ class PC:
         """
         return f"{PC._GAME_LOOKUP_URL}{game_name}"
 
-    #############################
-    '''   "PRIVATE" METHODS   '''
-    #############################
     @staticmethod
     def _make_request(url):
         """Makes a request for the provided url.
@@ -147,9 +141,9 @@ class PC:
             url = f"{PC._DEAL_URL}{game[Top_Deals_Indices.DEAL_ID.value]}"
             gid = game[Top_Deals_Indices.GAME_ID.value]
 
-            ''' Unfortunately, or fortunately?, the api can have lots of
-              duplicates, some with different prices, so I must do some
-              checking to remove dupes. '''
+            # Unfortunately, or fortunately?, the api can have lots of
+            # duplicates, some with different prices, so I must do some
+            # checking to remove dupes.
             if(title not in titles):  # Add title if it hasn't been added
                 titles.append(title)
                 parsed_data.append(create_game_dictionary(

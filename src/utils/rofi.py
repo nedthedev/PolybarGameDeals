@@ -131,8 +131,7 @@ def _choose_option(_options):
                               stdout=subprocess.PIPE, shell=False)
     if(category.returncode > 0):
         return None
-    else:
-        return category.stdout.decode("UTF-8")
+    return category.stdout.decode("UTF-8")
 
 
 def _choose_game(category, games, title_lengths):
@@ -203,8 +202,7 @@ def _get_input(prompt):
                             stdout=subprocess.PIPE, shell=False)
     if(choice.returncode == 0):
         return choice.stdout.decode("UTF-8")
-    else:
-        return None
+    return None
 
 
 def _confirmed(prompt):
@@ -222,10 +220,7 @@ def _confirmed(prompt):
                             f"{yes}{no}", encoding="UTF-8"),
                             stdout=subprocess.PIPE, shell=False
                             ).stdout.decode("UTF-8")
-    if(choice == yes):
-        return True
-    else:
-        return False
+    return (choice == yes)
 
 
 def _open_url(url):

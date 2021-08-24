@@ -39,17 +39,21 @@ The database will be automatically created and populated, just give it some time
 # only check for updates, do not open a rofi window
 -s, --silent
 ```
+<!-- ```bash
+# show prices and deals available for Playstation Plus subscribers
+-p, --ps-plus
+``` -->
 ```bash
 # specify the max price for top pc deals, defaults to 15
--pc-max PC_MAX_PRICE, --pc-max-price PC_MAX_PRICE
-```
-```bash
-# to add PC games to your wishlist specify the ids following the -pc command
--pc PC [PC ...]
+-pc-max PC_MAX
 ```
 ```bash
 # to add Playstation games to your wishlist specify the urls following the -ps command
 -ps PS [PS ...]
+```
+```bash
+# to add PC games to your wishlist specify the ids following the -pc command
+-pc PC [PC ...]
 ```
 
 ## Modification
