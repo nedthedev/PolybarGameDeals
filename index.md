@@ -1,8 +1,9 @@
 # PolybarGameDeals
 
-![](https://img.shields.io/github/repo-size/nkayp/PolybarGameDeals.svg?label=Repo%20size&style=plastic)
-![](https://img.shields.io/tokei/lines/github/nkayp/PolybarGameDeals?style=plastic)
-![](https://img.shields.io/github/license/nkayp/PolybarGameDeals?style=plastic)
+<!-- ![](https://img.shields.io/github/repo-size/nkayp/PolybarGameDeals.svg?label=Repo%20size) -->
+![](https://img.shields.io/tokei/lines/github/nkayp/PolybarGameDeals)
+[![CodeFactor](https://www.codefactor.io/repository/github/nkayp/polybargamedeals/badge)](https://www.codefactor.io/repository/github/nkayp/polybargamedeals)
+![](https://img.shields.io/github/license/nkayp/PolybarGameDeals)
 
 This script provides an all-in-one place for PC and Playstation deals. I built this to use for a [Polybar](https://github.com/polybar/polybar) module, and [Rofi](https://github.com/davatorium/rofi) seemed like a good way to render and interact with the data, but feel free to do whatever you want with it.
 
@@ -39,17 +40,21 @@ The database will be automatically created and populated, just give it some time
 # only check for updates, do not open a rofi window
 -s, --silent
 ```
+<!-- ```bash
+# show prices and deals available for Playstation Plus subscribers
+-p, --ps-plus
+``` -->
 ```bash
 # specify the max price for top pc deals, defaults to 15
--pc-max PC_MAX_PRICE, --pc-max-price PC_MAX_PRICE
-```
-```bash
-# to add PC games to your wishlist specify the ids following the -pc command
--pc PC [PC ...]
+-pc-max PC_MAX
 ```
 ```bash
 # to add Playstation games to your wishlist specify the urls following the -ps command
 -ps PS [PS ...]
+```
+```bash
+# to add PC games to your wishlist specify the ids following the -pc command
+-pc PC [PC ...]
 ```
 
 ## Modification
