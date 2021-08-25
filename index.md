@@ -1,6 +1,6 @@
 # PolybarGameDeals
 
-<!-- ![](https://img.shields.io/github/repo-size/nkayp/PolybarGameDeals.svg?label=Repo%20size) -->
+![](https://img.shields.io/github/repo-size/nkayp/PolybarGameDeals.svg?label=Repo%20size)
 ![](https://img.shields.io/tokei/lines/github/nkayp/PolybarGameDeals)
 [![CodeFactor](https://www.codefactor.io/repository/github/nkayp/polybargamedeals/badge)](https://www.codefactor.io/repository/github/nkayp/polybargamedeals)
 ![](https://img.shields.io/github/license/nkayp/PolybarGameDeals)
