@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="UTF-8">
+
+<!-- Begin Jekyll SEO tag v2.7.1 -->
+<title>PolybarGameDeals | Find Playstation and PC game deals</title>
+<meta name="generator" content="Jekyll v3.9.0" />
+<meta property="og:title" content="PolybarGameDeals" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Find Playstation and PC game deals" />
+<meta property="og:description" content="Find Playstation and PC game deals" />
+<link rel="canonical" href="https://nkayp.github.io/PolybarGameDeals/" />
+<meta property="og:url" content="https://nkayp.github.io/PolybarGameDeals/" />
+<meta property="og:site_name" content="PolybarGameDeals" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="PolybarGameDeals" />
+<script type="application/ld+json">
+{"description":"Find Playstation and PC game deals","headline":"PolybarGameDeals","url":"https://nkayp.github.io/PolybarGameDeals/","@type":"WebSite","name":"PolybarGameDeals","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link rel="preload" href="https://fonts.googleapis.com/css?family=Open+Sans:400,700&display=swap" as="style" type="text/css" crossorigin>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#157878">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="stylesheet" href="/PolybarGameDeals/assets/css/style.css?v=e4a459e9bcedc6107c8f393be53b7b2a1c11158c">
+    <!-- start custom head snippets, customize with your own _includes/head-custom.html file -->
+
+<!-- Setup Google Analytics -->
+
+
+
+<!-- You can set your favicon here -->
+<!-- link rel="shortcut icon" type="image/x-icon" href="/PolybarGameDeals/favicon.ico" -->
+
+<!-- end custom head snippets -->
+
+  </head>
+  <body>
+    <a id="skip-to-content" href="#content">Skip to the content.</a>
+
+    <header class="page-header" role="banner">
+      <h1 class="project-name">PolybarGameDeals</h1>
+      <h2 class="project-tagline">Find Playstation and PC game deals</h2>
+      
+        <a href="https://github.com/nkayp/PolybarGameDeals" class="btn">View on GitHub</a>
+        <a href="https://github.com/nkayp/PolybarGameDeals/archive/refs/heads/main.zip" class="btn">Download Zip</a>
+        <a href="https://github.com/nkayp/PolybarGameDeals/archive/refs/heads/main.tar.gz" class="btn">Download Tar</a>
+      
+    </header>
+
+    <main id="content" class="main-content" role="main">
+      <h1 id="polybargamedeals">PolybarGameDeals</h1>
+
+<p><img src="https://img.shields.io/github/repo-size/nkayp/PolybarGameDeals.svg?label=Repo%20size&amp;style=plastic" alt="" />
+<img src="https://img.shields.io/tokei/lines/github/nkayp/PolybarGameDeals?style=plastic" alt="" />
+<img src="https://img.shields.io/github/license/nkayp/PolybarGameDeals?style=plastic" alt="" /></p>
+
+<p>This script provides an all-in-one place for PC and Playstation deals. I built this to use for a <a href="https://github.com/polybar/polybar">Polybar</a> module, and <a href="https://github.com/davatorium/rofi">Rofi</a> seemed like a good way to render and interact with the data, but feel free to do whatever you want with it.</p>
+
+<h2 id="dependencies">Dependencies</h2>
+<ul>
+  <li>Rofi</li>
+  <li>A browser</li>
+  <li>Python 3
+    <ul>
+      <li>beautifulsoup4</li>
+      <li>requests</li>
+    </ul>
+  </li>
+</ul>
+
+<h2 id="data-sources">Data Sources</h2>
+<ul>
+  <li>PC Deals: <a href="https://www.cheapshark.com/">cheapshark.com</a> (API)</li>
+  <li>Playstation Deals: <a href="https://psdeals.net/">psdeals.net</a> (Scraped)
+    <h2 id="how-it-works">How it works</h2>
+    <p>All deals are stored in a SQLite database. Data requests are only made if a certain amount of time has passed since the last request. This delay makes the program run faster and is also important because PSDeals doesn’t offer an API, so excessive requests to their servers should be avoided.</p>
+  </li>
+</ul>
+
+<p>To run it, just download or clone this repository, go to the project’s location in a terminal and run:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>python3 <span class="nt">-m</span> venv venv
+<span class="nb">source </span>venv/bin/activate
+pip <span class="nb">install</span> <span class="nt">-r</span> requirements.txt
+</code></pre></div></div>
+<p>Then make sure main.<a href=""></a>py is executable and run it with:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>python main.py
+</code></pre></div></div>
+<p>The database will be automatically created and populated, just give it some time to fetch the data.</p>
+<h2 id="arguments">Arguments</h2>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># only open a rofi window, do not check for updates</span>
+<span class="nt">-r</span>, <span class="nt">--rofi</span>
+</code></pre></div></div>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># only check for updates, do not open a rofi window</span>
+<span class="nt">-s</span>, <span class="nt">--silent</span>
+</code></pre></div></div>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># specify the max price for top pc deals, defaults to 15</span>
+<span class="nt">-pc-max</span> PC_MAX_PRICE, <span class="nt">--pc-max-price</span> PC_MAX_PRICE
+</code></pre></div></div>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># to add PC games to your wishlist specify the ids following the -pc command</span>
+<span class="nt">-pc</span> PC <span class="o">[</span>PC ...]
+</code></pre></div></div>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># to add Playstation games to your wishlist specify the urls following the -ps command</span>
+<span class="nt">-ps</span> PS <span class="o">[</span>PS ...]
+</code></pre></div></div>
+
+<h2 id="modification">Modification</h2>
+<h3 id="want-to-do-something-else-with-the-data">Want to do something else with the data?</h3>
+<p>Feel free to tweak this however you want. For instance, if you don’t want to use Rofi then you need only replace the following lines in main.<a href=""></a>py with whatever you want to do with the data:</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">if</span><span class="p">(</span><span class="n">args</span><span class="p">.</span><span class="n">rofi</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">args</span><span class="p">.</span><span class="n">silent</span><span class="p">):</span>
+    <span class="n">launch_rofi</span><span class="p">(</span><span class="n">cur</span><span class="p">,</span> <span class="n">games</span><span class="p">,</span> <span class="n">title_lengths</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h2 id="notes">Notes</h2>
+<ul>
+  <li>All PC links go to <a href="https://www.cheapshark.com/">cheapshark.com</a> and will be redirected to the store with the best deal.</li>
+  <li>All Playstation links are scraped from <a href="https://psdeals.net/">psdeals.net</a> and when chosen will open a link directly to their website. Because the data is scraped from their website, there is a sleeping period between each page request. So, if it’s taking a while to run, it’s just making the requests and sleeping for a bit.</li>
+</ul>
+
+
+      <footer class="site-footer">
+        
+          <span class="site-footer-owner"><a href="https://github.com/nkayp/PolybarGameDeals">PolybarGameDeals</a> is maintained by <a href="https://github.com/nkayp">nkayp</a>.</span>
+        
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a>.</span>
+      </footer>
+    </main>
+  </body>
+</html>
