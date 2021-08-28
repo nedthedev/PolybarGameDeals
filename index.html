@@ -74,12 +74,11 @@
 <h2 id="data-sources">Data Sources</h2>
 <ul>
   <li>PC Deals: <a href="https://www.cheapshark.com/">cheapshark.com</a> (API)</li>
-  <li>Playstation Deals: <a href="https://psdeals.net/">psdeals.net</a> (Scraped)
-    <h2 id="how-it-works">How it works</h2>
-    <p>All deals are stored in a SQLite database. Data requests are only made if a certain amount of time has passed since the last request. This delay makes the program run faster and is also important because PSDeals doesn’t offer an API, so excessive requests to their servers should be avoided.</p>
-  </li>
+  <li>Playstation Deals: <a href="https://psdeals.net/">psdeals.net</a> (Scraped)</li>
 </ul>
 
+<h2 id="how-it-works">How it works</h2>
+<p>All deals are stored in a SQLite database. Data requests are only made if a certain amount of time has passed since the last request. This delay makes the program run faster and is also important because PSDeals doesn’t offer an API, so excessive requests to their servers should be avoided.</p>
 <p>To run it, just download or clone this repository, go to the project’s location in a terminal and run:</p>
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>python3 <span class="nt">-m</span> venv venv
 <span class="nb">source </span>venv/bin/activate
