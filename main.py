@@ -48,14 +48,14 @@ def check_args():
     #         deals available for Playstation Plus subscribers",
     #                             action="store_true")
     # ----------------------------------------------------------------------- #
-    parser.add_argument("-pc-max", help="the maximum price for PC deals\
+    parser.add_argument("--pc-max", help="the maximum price for PC deals\
         default=15", type=int, default=15)
     # ----------------------------------------------------------------------- #
-    parser.add_argument("-ps", help="url of game from https://psdeals.net/.\
+    parser.add_argument("--ps", help="url of game from https://psdeals.net/.\
         Just search for the game you want to add, copy the url, and paste it,\
             along with all other urls", action="extend", nargs="+")
     # ----------------------------------------------------------------------- #
-    parser.add_argument("-pc", help="id of pc game from\
+    parser.add_argument("--pc", help="id of pc game from\
         https://www.cheapshark.com. To find the id of your game, search for\
             it at https://www.cheapshark.com/api/1.0/games?title=game-name",
                         action="extend", nargs="+")

@@ -26,20 +26,69 @@ class DB_Calls:
         :rtype:       list
         """
         try:
-            cur.execute(f"""SELECT {DB_Columns.SALE_PRICE.value} FROM
-                         {table}""")
+            if(table == DB_Tables.TOP_PC.value):
+                return cur.execute("""SELECT * FROM TOP_PC ORDER BY
+                                sale_price ASC""").fetchall()
+            elif(table == DB_Tables.TOP_PS.value):
+                return cur.execute("""SELECT * FROM TOP_PS ORDER BY
+                                sale_price ASC""").fetchall()
+            elif(table == DB_Tables.PC_WISHLIST.value):
+                return cur.execute("""SELECT * FROM PC_WISHLIST ORDER BY
+                                sale_price ASC""").fetchall()
+            elif(table == DB_Tables.PS_WISHLIST.value):
+                return cur.execute("""SELECT * FROM PS_WISHLIST ORDER BY
+                                sale_price ASC""").fetchall()
         except Exception:
-            cur.execute(f"""CREATE TABLE {table}(
-                {DB_Columns.TITLE.value} TEXT NOT NULL UNIQUE,
-                {DB_Columns.FULL_PRICE.value} REAL,
-                {DB_Columns.SALE_PRICE.value} REAL,
-                {DB_Columns.COVER_IMAGE.value} TEXT,
-                {DB_Columns.URL.value} TEXT NOT NULL UNIQUE,
-                {DB_Columns.GID.value} INTEGER UNIQUE,
-                {DB_Columns.UPDATE_TIME.value} TEXT,
-                {DB_Columns.TITLE_LENGTH.value} INTEGER)""")
-        return cur.execute(f"""SELECT * FROM {table} ORDER BY
-                            {DB_Columns.SALE_PRICE.value} ASC""").fetchall()
+            if(table == DB_Tables.TOP_PC.value):
+                query = """CREATE TABLE TOP_PC(
+                        title TEXT NOT NULL UNIQUE,
+                        full_price REAL,
+                        sale_price REAL,
+                        cover_image TEXT,
+                        url TEXT NOT NULL UNIQUE,
+                        gid INTEGER UNIQUE,
+                        update_time TEXT,
+                        title_length INTEGER)"""
+                return_query = """SELECT * FROM TOP_PC ORDER BY
+                                sale_price ASC"""
+            elif(table == DB_Tables.TOP_PS.value):
+                query = """CREATE TABLE TOP_PS(
+                        title TEXT NOT NULL UNIQUE,
+                        full_price REAL,
+                        sale_price REAL,
+                        cover_image TEXT,
+                        url TEXT NOT NULL UNIQUE,
+                        gid INTEGER UNIQUE,
+                        update_time TEXT,
+                        title_length INTEGER)"""
+                return_query = """SELECT * FROM TOP_PS ORDER BY
+                                sale_price ASC"""
+            elif(table == DB_Tables.PC_WISHLIST.value):
+                query = """CREATE TABLE PC_WISHLIST(
+                        title TEXT NOT NULL UNIQUE,
+                        full_price REAL,
+                        sale_price REAL,
+                        cover_image TEXT,
+                        url TEXT NOT NULL UNIQUE,
+                        gid INTEGER UNIQUE,
+                        update_time TEXT,
+                        title_length INTEGER)"""
+                return_query = """SELECT * FROM PC_WISHLIST ORDER BY
+                                sale_price ASC"""
+            elif(table == DB_Tables.PS_WISHLIST.value):
+                query = """CREATE TABLE PS_WISHLIST(
+                        title TEXT NOT NULL UNIQUE,
+                        full_price REAL,
+                        sale_price REAL,
+                        cover_image TEXT,
+                        url TEXT NOT NULL UNIQUE,
+                        gid INTEGER UNIQUE,
+                        update_time TEXT,
+                        title_length INTEGER)"""
+                return_query = """SELECT * FROM PS_WISHLIST ORDER BY
+                                sale_price ASC"""
+            cur.execute(query)
+            return cur.execute(return_query).fetchall()
 
     @staticmethod
     def add_top_deals(cur, table, existing_games, new_games):
@@ -93,11 +142,22 @@ class DB_Calls:
                       ascending
         :rtype:       list
         """
+        if(table == DB_Tables.TOP_PC.value):
+            query = """SELECT * FROM TOP_PC WHERE
+                                gid=?"""
+        elif(table == DB_Tables.TOP_PS.value):
+            query = """SELECT * FROM TOP_PS WHERE
+                                gid=?"""
+        elif(table == DB_Tables.PC_WISHLIST.value):
+            query = """SELECT * FROM PC_WISHLIST WHERE
+                                gid=?"""
+        elif(table == DB_Tables.PS_WISHLIST.value):
+            query = """SELECT * FROM PS_WISHLIST WHERE
+                                gid=?"""
         if(games_to_update is None):
             for game in games:
-                if(cur.execute(f"""SELECT * FROM {table} WHERE
-                                {DB_Columns.GID.value}=?""",
-                   (game[DB_Columns.GID.value], )).fetchone()):
+                if(cur.execute(query, (game[DB_Columns.GID.value], )
+                               ).fetchone()):
                     DB_Calls._update_game(cur, table, game)
                 else:
                     DB_Calls._add_game(cur, table, game)
@@ -122,13 +182,35 @@ class DB_Calls:
         :rtype: [type]
         """
         if(url):
-            if(cur.execute(f"""SELECT * FROM {table} WHERE
-                            {DB_Columns.URL.value}=?""", (url, )).fetchone()):
-                return True
+            parameter = url
+            if(table == DB_Tables.TOP_PC.value):
+                query = """SELECT * FROM TOP_PC WHERE
+                                url=?"""
+            elif(table == DB_Tables.TOP_PS.value):
+                query = """SELECT * FROM TOP_PS WHERE
+                                url=?"""
+            elif(table == DB_Tables.PC_WISHLIST.value):
+                query = """SELECT * FROM PC_WISHLIST WHERE
+                                url=?"""
+            elif(table == DB_Tables.PS_WISHLIST.value):
+                query = """SELECT * FROM PS_WISHLIST WHERE
+                                url=?"""
         elif(id_):
-            if(cur.execute(f"""SELECT * FROM {table} WHERE
-                            {DB_Columns.GID.value}=?""", (id_, )).fetchone()):
-                return True
+            parameter = id_
+            if(table == DB_Tables.TOP_PC.value):
+                query = """SELECT * FROM TOP_PC WHERE
+                                gid=?"""
+            elif(table == DB_Tables.TOP_PS.value):
+                query = """SELECT * FROM TOP_PS WHERE
+                                gid=?"""
+            elif(table == DB_Tables.PC_WISHLIST.value):
+                query = """SELECT * FROM PC_WISHLIST WHERE
+                                gid=?"""
+            elif(table == DB_Tables.PS_WISHLIST.value):
+                query = """SELECT * FROM PS_WISHLIST WHERE
+                                gid=?"""
+        if(cur.execute(query, (parameter, )).fetchone()):
+            return True
         return False
 
     @staticmethod
@@ -142,8 +224,19 @@ class DB_Calls:
         :param title: the title of the game to delete
         :type title:  str
         """
-        cur.execute(f"""DELETE FROM {table} WHERE
-                     {DB_Columns.TITLE.value}=?""", (title, ))
+        if(table == DB_Tables.TOP_PC.value):
+            query = """DELETE FROM TOP_PC WHERE
+                     title=?"""
+        elif(table == DB_Tables.TOP_PS.value):
+            query = """DELETE FROM TOP_PS WHERE
+                     title=?"""
+        elif(table == DB_Tables.PC_WISHLIST.value):
+            query = """DELETE FROM PC_WISHLIST WHERE
+                     title=?"""
+        elif(table == DB_Tables.PS_WISHLIST.value):
+            query = """DELETE FROM PS_WISHLIST WHERE
+                     title=?"""
+        cur.execute(query, (title, ))
 
     @staticmethod
     def delete_game_with_id(cur, table, id_):
@@ -156,8 +249,19 @@ class DB_Calls:
         :param id_:    the id to delete from the table
         :type id_:     int
         """
-        cur.execute(f"""DELETE FROM {table} WHERE
-                     {DB_Columns.GID.value}=?""", (id_, ))
+        if(table == DB_Tables.TOP_PC.value):
+            query = """DELETE FROM TOP_PC WHERE
+                     gid=?"""
+        elif(table == DB_Tables.TOP_PS.value):
+            query = """DELETE FROM TOP_PS WHERE
+                     gid=?"""
+        elif(table == DB_Tables.PC_WISHLIST.value):
+            query = """DELETE FROM PC_WISHLIST WHERE
+                     gid=?"""
+        elif(table == DB_Tables.PS_WISHLIST.value):
+            query = """DELETE FROM PS_WISHLIST WHERE
+                     gid=?"""
+        cur.execute(query, (id_, ))
 
     @staticmethod
     def delete_game_now(cur, table, title, games):
