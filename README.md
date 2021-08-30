@@ -46,15 +46,15 @@ The database will be automatically created and populated, just give it some time
 ``` -->
 ```bash
 # specify the max price for top pc deals, defaults to 15
--pc-max PC_MAX
+--pc-max PC_MAX
 ```
 ```bash
 # to add Playstation games to your wishlist specify the urls following the -ps command
--ps PS [PS ...]
+--ps PS [PS ...]
 ```
 ```bash
 # to add PC games to your wishlist specify the ids following the -pc command
--pc PC [PC ...]
+--pc PC [PC ...]
 ```
 
 ## Modification

@@ -25,19 +25,24 @@ class DB_Calls:
                       ascending
         :rtype:       list
         """
+        top_pc_rq = """SELECT * FROM TOP_PC ORDER BY
+                                sale_price ASC"""
+        top_ps_rq = """SELECT * FROM TOP_PS ORDER BY
+                                sale_price ASC"""
+        pc_wishlist_rq = """SELECT * FROM PC_WISHLIST ORDER BY
+                                sale_price ASC"""
+        ps_wishlist_rq = """SELECT * FROM PS_WISHLIST ORDER BY
+                                sale_price ASC"""
         try:
             if(table == DB_Tables.TOP_PC.value):
-                return cur.execute("""SELECT * FROM TOP_PC ORDER BY
-                                sale_price ASC""").fetchall()
+                return_query = top_pc_rq
             elif(table == DB_Tables.TOP_PS.value):
-                return cur.execute("""SELECT * FROM TOP_PS ORDER BY
-                                sale_price ASC""").fetchall()
+                return_query = top_ps_rq
             elif(table == DB_Tables.PC_WISHLIST.value):
-                return cur.execute("""SELECT * FROM PC_WISHLIST ORDER BY
-                                sale_price ASC""").fetchall()
+                return_query = pc_wishlist_rq
             elif(table == DB_Tables.PS_WISHLIST.value):
-                return cur.execute("""SELECT * FROM PS_WISHLIST ORDER BY
-                                sale_price ASC""").fetchall()
+                return_query = ps_wishlist_rq
+            return cur.execute(return_query).fetchall()
         except Exception:
             if(table == DB_Tables.TOP_PC.value):
                 query = """CREATE TABLE TOP_PC(
@@ -49,8 +54,7 @@ class DB_Calls:
                         gid INTEGER UNIQUE,
                         update_time TEXT,
                         title_length INTEGER)"""
-                return_query = """SELECT * FROM TOP_PC ORDER BY
-                                sale_price ASC"""
+                return_query = top_pc_rq
             elif(table == DB_Tables.TOP_PS.value):
                 query = """CREATE TABLE TOP_PS(
                         title TEXT NOT NULL UNIQUE,
@@ -61,8 +65,7 @@ class DB_Calls:
                         gid INTEGER UNIQUE,
                         update_time TEXT,
                         title_length INTEGER)"""
-                return_query = """SELECT * FROM TOP_PS ORDER BY
-                                sale_price ASC"""
+                return_query = top_ps_rq
             elif(table == DB_Tables.PC_WISHLIST.value):
                 query = """CREATE TABLE PC_WISHLIST(
                         title TEXT NOT NULL UNIQUE,
@@ -73,8 +76,7 @@ class DB_Calls:
                         gid INTEGER UNIQUE,
                         update_time TEXT,
                         title_length INTEGER)"""
-                return_query = """SELECT * FROM PC_WISHLIST ORDER BY
-                                sale_price ASC"""
+                return_query = pc_wishlist_rq
             elif(table == DB_Tables.PS_WISHLIST.value):
                 query = """CREATE TABLE PS_WISHLIST(
                         title TEXT NOT NULL UNIQUE,
@@ -85,8 +87,7 @@ class DB_Calls:
                         gid INTEGER UNIQUE,
                         update_time TEXT,
                         title_length INTEGER)"""
-                return_query = """SELECT * FROM PS_WISHLIST ORDER BY
-                                sale_price ASC"""
+                return_query = ps_wishlist_rq
             cur.execute(query)
             return cur.execute(return_query).fetchall()
 
