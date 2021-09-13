@@ -157,34 +157,27 @@ if __name__ == "__main__":
         update_wishlist_games(cur, DB_Tables.PS_WISHLIST.value, args.ps,
                               CUSTOM_UPDATE_DELAY)
 
-    # Get games from the database
-    pc_wishlist_games = DB_Calls.get_data(cur, DB_Tables.PC_WISHLIST.value)
-    ps_wishlist_games = DB_Calls.get_data(cur, DB_Tables.PS_WISHLIST.value)
-    top_pc_games = DB_Calls.get_data(cur, DB_Tables.TOP_PC.value)
-    top_ps_games = DB_Calls.get_data(cur, DB_Tables.TOP_PS.value)
-
-    # Totally unnecessary but it looks nice to have rofi titles equal
-    longest_top_pc_title = DB_Calls.get_longest_title(
-        cur, DB_Tables.TOP_PC.value)
-    longest_top_ps_title = DB_Calls.get_longest_title(
-        cur, DB_Tables.TOP_PS.value)
-    longest_pc_wishlist_title = DB_Calls.get_longest_title(
-        cur, DB_Tables.PC_WISHLIST.value)
-    longest_ps_wishlist_title = DB_Calls.get_longest_title(
-        cur, DB_Tables.PS_WISHLIST.value)
-
     # Gather all games into dictionary for convenience
     games = {
-        DB_Tables.TOP_PC.value: top_pc_games,
-        DB_Tables.TOP_PS.value: top_ps_games,
-        DB_Tables.PC_WISHLIST.value: pc_wishlist_games,
-        DB_Tables.PS_WISHLIST.value: ps_wishlist_games
+        DB_Tables.TOP_PC.value: DB_Calls.get_data(
+                                    cur, DB_Tables.TOP_PC.value),
+        DB_Tables.TOP_PS.value: DB_Calls.get_data(
+                                    cur, DB_Tables.TOP_PS.value),
+        DB_Tables.PC_WISHLIST.value: DB_Calls.get_data(
+                                        cur, DB_Tables.PC_WISHLIST.value),
+        DB_Tables.PS_WISHLIST.value: DB_Calls.get_data(
+                                        cur, DB_Tables.PS_WISHLIST.value)
     }
+    # Gather all the longest titles
     title_lengths = {
-        DB_Tables.TOP_PC.value: longest_top_pc_title,
-        DB_Tables.TOP_PS.value: longest_top_ps_title,
-        DB_Tables.PC_WISHLIST.value: longest_pc_wishlist_title,
-        DB_Tables.PS_WISHLIST.value: longest_ps_wishlist_title
+        DB_Tables.TOP_PC.value: DB_Calls.get_longest_title(
+                                    cur, DB_Tables.TOP_PC.value),
+        DB_Tables.TOP_PS.value: DB_Calls.get_longest_title(
+                                    cur, DB_Tables.TOP_PS.value),
+        DB_Tables.PC_WISHLIST.value: DB_Calls.get_longest_title(
+                                        cur, DB_Tables.PC_WISHLIST.value),
+        DB_Tables.PS_WISHLIST.value: DB_Calls.get_longest_title(
+                                        cur, DB_Tables.PS_WISHLIST.value)
     }
 
     # Rofi window logic loop

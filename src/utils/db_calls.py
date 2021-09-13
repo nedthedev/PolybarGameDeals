@@ -177,10 +177,10 @@ class DB_Calls:
         :type cur:    cursor
         :param table: the table to check game id for
         :type table:  str
-        :param id_:    the id to search table for
-        :type id_:     int
-        :return: [description]
-        :rtype: [type]
+        :param id_:   the id to search table for
+        :type id_:    int
+        :return:      True if game with url or id exists
+        :rtype:       bool
         """
         if(url):
             parameter = url
@@ -247,8 +247,8 @@ class DB_Calls:
         :type cur:    cursor
         :param table: the table to delete the id from
         :type table:  str
-        :param id_:    the id to delete from the table
-        :type id_:     int
+        :param id_:   the id to delete from the table
+        :type id_:    int
         """
         if(table == DB_Tables.TOP_PC.value):
             query = """DELETE FROM TOP_PC WHERE
