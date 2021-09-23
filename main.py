@@ -19,6 +19,7 @@ import sqlite3
 import os
 import argparse
 from datetime import timedelta
+from rich.console import Console
 
 from src.platforms.pc import PC
 from src.platforms.ps import PS
@@ -90,6 +91,8 @@ def update_wishlist_games(cur, table, wishlist_args, update_delay):
                 PS.get_wishlist_deals(cur, outdated_games+wishlist_args))
         if(new_games):
             DB_Calls.add_games(cur, _table, new_games, games_to_update)
+            return True
+    return False
 
 
 def update_top_games(cur, table, cls, update_delay, upper_price=None):
@@ -112,6 +115,8 @@ def update_top_games(cur, table, cls, update_delay, upper_price=None):
         new_top = cls.get_top_deals(upper_price)
         if(new_top):
             DB_Calls.add_top_deals(cur, table, old_top, new_top)
+            return True
+    return False
 
 
 if __name__ == "__main__":
@@ -147,15 +152,23 @@ if __name__ == "__main__":
 
     # If we did not pass the -r option then check for updates
     if(not args.rofi):
-        # update the top games
-        update_top_games(cur, DB_Tables.TOP_PC.value, PC, CUSTOM_UPDATE_DELAY,
-                         args.pc_max)
-        update_top_games(cur, DB_Tables.TOP_PS.value, PS, CUSTOM_UPDATE_DELAY)
-        # update wishlist games
-        update_wishlist_games(cur, DB_Tables.PC_WISHLIST.value, args.pc,
-                              CUSTOM_UPDATE_DELAY)
-        update_wishlist_games(cur, DB_Tables.PS_WISHLIST.value, args.ps,
-                              CUSTOM_UPDATE_DELAY)
+        console = Console()
+        console.print()
+        with console.status("[bold green]Fetching deals...") as status:
+            # update the top games
+            if(update_top_games(cur, DB_Tables.TOP_PC.value, PC,
+                                CUSTOM_UPDATE_DELAY, args.pc_max)):
+                console.log("Fetched top PC deals")
+            if(update_top_games(cur, DB_Tables.TOP_PS.value, PS,
+                                CUSTOM_UPDATE_DELAY)):
+                console.log("Fetched top Playstation deals")
+            # update wishlist games
+            if(update_wishlist_games(cur, DB_Tables.PC_WISHLIST.value, args.pc,
+                                     CUSTOM_UPDATE_DELAY)):
+                console.log("Fetched PC wishlist deals")
+            if(update_wishlist_games(cur, DB_Tables.PS_WISHLIST.value, args.ps,
+                                     CUSTOM_UPDATE_DELAY)):
+                console.log("Fetched Playstation wishlist deals")
 
     # Gather all games into dictionary for convenience
     games = {
