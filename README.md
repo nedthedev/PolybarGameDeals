@@ -32,27 +32,27 @@ python main.py
 ```
 The database will be automatically created and populated, just give it some time to fetch the data.
 ## Arguments
-To only open a rofi window, do not check for updates
+To only open a rofi window, do not check for updates:
 ```bash
 -r, --rofi
 ```
-To only check for updates, do not open a rofi window
+To only check for updates, do not open a rofi window:
 ```bash
 -s, --silent
 ```
-<!-- To show prices and deals available for Playstation Plus subscribers
+<!-- To show prices and deals available for Playstation Plus subscribers:
 ```bash
 -p, --ps-plus
 ``` -->
-To specify the max price for top pc deals, defaults to 15
+To specify the max price for top pc deals, defaults to 15:
 ```bash
 --pc-max PC_MAX
 ```
-To add Playstation games to your wishlist specify the urls following the -ps command
+To add Playstation games to your wishlist specify the urls following the -ps command:
 ```bash
 --ps PS [PS ...]
 ```
-To add PC games to your wishlist specify the ids following the -pc command
+To add PC games to your wishlist specify the ids following the -pc command:
 ```bash
 --pc PC [PC ...]
 ```
