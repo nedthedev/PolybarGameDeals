@@ -1,4 +1,4 @@
-# PolybarGameDeals
+# PolybarGameDeals (Abandoned)
 
 <!-- ![](https://img.shields.io/github/repo-size/nkayp/PolybarGameDeals.svg?label=Repo%20size) -->
 ![](https://img.shields.io/tokei/lines/github/nkayp/PolybarGameDeals)
