@@ -1,9 +1,9 @@
 # PolybarGameDeals (Abandoned)
 
-<!-- ![](https://img.shields.io/github/repo-size/nkayp/PolybarGameDeals.svg?label=Repo%20size) -->
-![](https://img.shields.io/tokei/lines/github/nkayp/PolybarGameDeals)
-[![CodeFactor](https://www.codefactor.io/repository/github/nkayp/polybargamedeals/badge)](https://www.codefactor.io/repository/github/nkayp/polybargamedeals)
-![](https://img.shields.io/github/license/nkayp/PolybarGameDeals)
+<!-- ![](https://img.shields.io/github/repo-size/nedthedev/PolybarGameDeals.svg?label=Repo%20size) -->
+![](https://img.shields.io/tokei/lines/github/nedthedev/PolybarGameDeals)
+[![CodeFactor](https://www.codefactor.io/repository/github/nedthedev/polybargamedeals/badge)](https://www.codefactor.io/repository/github/nedthedev/polybargamedeals)
+![](https://img.shields.io/github/license/nedthedev/PolybarGameDeals)
 
 This script provides an all-in-one place for PC and Playstation deals. I built this to use for a [Polybar](https://github.com/polybar/polybar) module, and [Rofi](https://github.com/davatorium/rofi) seemed like a good way to render and interact with the data, but feel free to do whatever you want with it.
 
