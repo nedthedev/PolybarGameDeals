@@ -1,7 +1,7 @@
 # PolybarGameDeals (Abandoned)
 
-<!-- ![](https://img.shields.io/github/repo-size/nedthedev/PolybarGameDeals.svg?label=Repo%20size) -->
-![](https://img.shields.io/tokei/lines/github/nedthedev/PolybarGameDeals)
+<!-- ![](https://img.shields.io/tokei/lines/github/nedthedev/PolybarGameDeals) -->
+![](https://img.shields.io/github/repo-size/nedthedev/PolybarGameDeals.svg?label=Repo%20size)
 [![CodeFactor](https://www.codefactor.io/repository/github/nedthedev/polybargamedeals/badge)](https://www.codefactor.io/repository/github/nedthedev/polybargamedeals)
 ![](https://img.shields.io/github/license/nedthedev/PolybarGameDeals)
 
